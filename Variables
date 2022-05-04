@@ -1,0 +1,19 @@
+namespace Lessons
+{
+    class Lessons
+    {
+        private static void Main()
+        {
+            int distanceToTarget;
+            uint itemsCount;
+            long xCoordinate;
+            ulong playerCoins;
+            float damage;
+            double health;
+            string characterName;
+            char currency;
+            bool isDead;
+            byte charactersCount;
+        }
+    }
+}
