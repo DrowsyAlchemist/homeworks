@@ -1,0 +1,21 @@
+using System;
+
+namespace Lessons
+{
+    class Lessons
+    {
+        private static void Main()
+        {
+            Console.Write("Первая переменная: ");
+            string firstValue = Console.ReadLine();
+            Console.Write("Вторая переменная: ");
+            string secondValue = Console.ReadLine();
+            Console.WriteLine($"\nДо перестановки:\n\tПервая переменная: {firstValue}\n\tВторая переменная: {secondValue}");
+            string tempValue = firstValue;
+            firstValue = secondValue;
+            secondValue = tempValue;
+            Console.WriteLine($"\nПосле перестановки:\n\tПервая переменная: {firstValue}\n\tВторая переменная: {secondValue}");
+            Console.ReadKey();
+        }
+    }
+}
