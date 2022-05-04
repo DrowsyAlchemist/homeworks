@@ -1,0 +1,19 @@
+using System;
+
+namespace Lessons
+{
+    class Lessons
+    {
+        private static void Main()
+        {
+            int crystalPrice = 10;
+            Console.Write("Золота: ");
+            int goldCoins = Convert.ToInt32(Console.ReadLine());
+            Console.WriteLine($"\nCколько вы хотите купить кристаллов? Стоимость одного кристалла: {crystalPrice} золотых монет.");
+            Console.Write("Я хочу купить: ");
+            int cristalCount = Convert.ToInt32(Console.ReadLine());
+            goldCoins -= cristalCount * crystalPrice;  
+            Console.WriteLine($"\nИнвентарь:\n\tЗолото: {goldCoins}\n\tКристаллы: {cristalCount}");
+            Console.ReadKey();
+        }
+    }
