@@ -1,0 +1,17 @@
+using System;
+
+namespace Lessons
+{
+    class Lessons
+    {
+        private static void Main()
+        {
+            int picturesCount = 52;
+            int picturesInRow = 3;
+            int filledRows = picturesCount / picturesInRow;
+            int picturesBeyond = picturesCount % picturesInRow;
+            Console.WriteLine($"Полностью заполненных рядов: {filledRows}\nСверх меры будет {picturesBeyond} картинка(ки).");
+            Console.ReadKey();
+        }
+    }
+}
