@@ -1,0 +1,18 @@
+using System;
+
+namespace Lessons
+{
+    class Lessons
+    {
+        private static void Main()
+        {
+            int receptionTimeInMinutes = 10;
+            Console.WriteLine("Введите кол-во старушек: ");
+            int babushkaCount = Convert.ToInt32(Console.ReadLine());
+            int hoursWait = babushkaCount * receptionTimeInMinutes / 60;
+            int minutesWait = babushkaCount * receptionTimeInMinutes % 60;
+            Console.WriteLine($"\nВы должны отстоять в очереди {hoursWait} час(а) и {minutesWait} минут(ы).");
+            Console.ReadKey();
+        }
+    }
+}
