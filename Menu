@@ -33,14 +33,14 @@ namespace Lessons
                     case "LogIn":
                         Console.Write("\nВведите имя пользователя: ");
 
-                        if (!(accountName == Console.ReadLine()))
+                        if ((accountName == Console.ReadLine()) == false)
                         {
                             Console.WriteLine("Пользователь не найден!\n");
                             break;
                         }
                         Console.Write("Введите пароль: ");
 
-                        if (!(accountPassword == Console.ReadLine()))
+                        if ((accountPassword == Console.ReadLine()) == false)
                         {
                             Console.WriteLine("Неверный пароль!\n");
                             break;
@@ -50,14 +50,14 @@ namespace Lessons
                     case "ChangePassword":
                         Console.Write("\nВведите имя пользователя: ");
 
-                        if (!(accountName == Console.ReadLine()))
+                        if ((accountName == Console.ReadLine()) == false)
                         {
                             Console.WriteLine("Пользователь не найден!\n");
                             break;
                         }
                         Console.Write("Введите старый пароль: ");
 
-                        if (!(accountPassword == Console.ReadLine()))
+                        if ((accountPassword == Console.ReadLine()) == false)
                         {
                             Console.WriteLine("Неверный пароль!\n");
                             break;
