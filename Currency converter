@@ -1,0 +1,77 @@
+using System;
+
+namespace Lessons
+{
+    class Lessons
+    {
+        private static void Main()
+        {
+            float rubExchangeRateToDollar = 0.015097f;
+            float eurExchangeRateToDollar = 1.05f;
+            Console.Write("Введите ваш баланс:\nUSD: ");
+            float dollarsOnBalance = Convert.ToSingle(Console.ReadLine());
+            Console.Write("RUB: ");
+            float rublesOnBalance = Convert.ToSingle(Console.ReadLine());
+            Console.Write("EUR: ");
+            float eurosOnBalance = Convert.ToSingle(Console.ReadLine());
+            string inputData = string.Empty;
+
+            while (inputData != "4")
+            {
+                Console.WriteLine("\nКакую валюту вы хотите обменять?\n1 - USD\n2 - RUB\n3 - EUR\n4 - Выйти");
+                inputData = Console.ReadLine();
+
+                switch (inputData)
+                {
+                    case "1":
+                        Console.WriteLine("\nНа какую валюту вы хотите обменять доллары?\n1 - RUB\n2 - EUR");
+                        inputData = Console.ReadLine();
+                        Console.WriteLine("\nСколько долларов меняем?");
+                        float dollarsToExchange = Convert.ToSingle(Console.ReadLine());
+                        dollarsOnBalance -= dollarsToExchange;
+
+                        if (inputData == "1")
+                            rublesOnBalance += dollarsToExchange / rubExchangeRateToDollar;
+                        else if (inputData == "2")
+                            eurosOnBalance += dollarsToExchange / eurExchangeRateToDollar;
+                        else 
+                            continue;
+                        break;
+                    case "2":
+                        Console.WriteLine("\nНа какую валюту вы хотите обменять рубли?\n1 - USD\n2 - EUR");
+                        inputData = Console.ReadLine();
+                        Console.WriteLine("\nСколько рублей меняем?");
+                        float rublesToExchange = Convert.ToSingle(Console.ReadLine());
+                        rublesOnBalance -= rublesToExchange;
+
+                        if (inputData == "1")                          
+                            dollarsOnBalance += rublesToExchange * rubExchangeRateToDollar;
+                        else if (inputData == "2")
+                            eurosOnBalance += rublesToExchange * rubExchangeRateToDollar / eurExchangeRateToDollar;
+                        else
+                            continue;
+                        break;
+                    case "3":
+                        Console.WriteLine("\nНа какую валюту вы хотите обменять евро?\n1 - RUB\n2 - USD");
+                        inputData = Console.ReadLine();
+                        Console.WriteLine("\nСколько евро меняем?");
+                        float euroToExchange = Convert.ToSingle(Console.ReadLine());
+                        eurosOnBalance -= euroToExchange;
+
+                        if (inputData == "1")
+                            rublesOnBalance += euroToExchange * eurExchangeRateToDollar / rubExchangeRateToDollar;
+                        else if (inputData == "2")
+                            dollarsOnBalance += euroToExchange * eurExchangeRateToDollar;
+                        else
+                            continue;
+                        break;
+                    default:
+                        continue;
+                }
+                Console.Clear();
+                Console.WriteLine($"Ваш балланс:\n\tUSD: {dollarsOnBalance}\n\tRUB: {rublesOnBalance}\n\tEUR: {eurosOnBalance}\n");
+            }
+            Console.ReadKey();
+        }
+    }
+}
