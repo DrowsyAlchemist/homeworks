@@ -10,6 +10,7 @@ namespace Lessons
             string message = Console.ReadLine();
             Console.WriteLine("Сколько раз нужно повторить?");
             int repeatCount = Convert.ToInt32(Console.ReadLine());
+            
             for (int i = 0; i < repeatCount; i++)
             {
                 Console.WriteLine(message);
