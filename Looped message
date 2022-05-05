@@ -1,0 +1,20 @@
+using System;
+
+namespace Lessons
+{
+    class Lessons
+    {
+        private static void Main()
+        {
+            Console.Write("Сообщение: ");
+            string message = Console.ReadLine();
+            Console.WriteLine("Сколько раз нужно повторить?");
+            int repeatCount = Convert.ToInt32(Console.ReadLine());
+            for (int i = 0; i < repeatCount; i++)
+            {
+                Console.WriteLine(message);
+            }
+            Console.ReadKey();
+        }
+    }
+}
