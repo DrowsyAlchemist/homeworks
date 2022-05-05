@@ -1,0 +1,81 @@
+using System;
+
+namespace Lessons
+{
+    class Lessons
+    {
+        private static void Main()
+        {
+            string inputData = string.Empty;
+            string accountName = "admin";
+            string accountPassword = "admin";
+
+            while (inputData != "Exit")
+            {
+                Console.Write("Список команд:" +
+                    "\n\tCreateAccount - создать аккаунт" +
+                    "\n\tLogIn -  Войти в аккаунт" +
+                    "\n\tChangePassword - сменить пароль" +
+                    "\n\tExit - выйти из программы" +
+                    "\n\tClear - очистить консоль" +
+                    "\n\nОжидается ввод\n");
+                inputData = Console.ReadLine();
+
+                switch (inputData)
+                {
+                    case "CreateAccount":
+                        Console.Write("\nВведите имя пользователя: ");
+                        accountName = Console.ReadLine();
+                        Console.Write("Введите пароль: ");
+                        accountPassword = Console.ReadLine();
+                        Console.WriteLine("Аккаунт успешно создан!\n");
+                        break;
+                    case "LogIn":
+                        Console.Write("\nВведите имя пользователя: ");
+
+                        if (!(accountName == Console.ReadLine()))
+                        {
+                            Console.WriteLine("Пользователь не найден!\n");
+                            break;
+                        }
+                        Console.Write("Введите пароль: ");
+
+                        if (!(accountPassword == Console.ReadLine()))
+                        {
+                            Console.WriteLine("Неверный пароль!\n");
+                            break;
+                        }
+                        Console.WriteLine("Выполнен вход!\n");
+                        break;
+                    case "ChangePassword":
+                        Console.Write("\nВведите имя пользователя: ");
+
+                        if (!(accountName == Console.ReadLine()))
+                        {
+                            Console.WriteLine("Пользователь не найден!\n");
+                            break;
+                        }
+                        Console.Write("Введите старый пароль: ");
+
+                        if (!(accountPassword == Console.ReadLine()))
+                        {
+                            Console.WriteLine("Неверный пароль!\n");
+                            break;
+                        }
+                        Console.Write("Введите новый пароль: ");
+                        accountPassword = Console.ReadLine();
+                        Console.WriteLine("Пароль успешно изменён!\n");
+                        break;
+                    case "Exit":
+                    case "Clear":
+                        Console.Clear();
+                        break;
+                    default:
+                        Console.WriteLine("\nНе явлется командой!\n");
+                        break;
+                }
+            }
+            Console.ReadKey();
+        }
+    }
+}
