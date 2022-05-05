@@ -1,0 +1,20 @@
+using System;
+
+namespace Lessons
+{
+    class Lessons
+    {
+        private static void Main()
+        {
+            // Выбрал for, чтобы не объявлять дополнительно переменную для счётчика вне цикла 
+            int upperBound = 100;
+            int initialValue = 5;
+            int valueToAdd = 7;
+
+            for (int i = initialValue; i < upperBound; i+= valueToAdd)
+                Console.WriteLine(i);
+
+            Console.ReadKey();
+        }
+    }
+}
