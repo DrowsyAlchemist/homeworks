@@ -1,0 +1,19 @@
+using System;
+
+namespace Lessons
+{
+    class Lessons
+    {
+        private static void Main()
+        {
+            string inputData = string.Empty;
+            Console.WriteLine("Введите \"exit\" для завершения работы.");
+
+            while (inputData != "exit")
+            {
+                inputData = Console.ReadLine();
+            }
+            Console.ReadKey();
+        }
+    }
+}
