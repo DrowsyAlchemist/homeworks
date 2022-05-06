@@ -1,0 +1,26 @@
+using System;
+
+namespace Lessons
+{
+    class Lessons
+    {
+        private static void Main()
+        {
+            Random random = new Random();
+            int lowerBound = 1;
+            int upperBound = 27;
+            int number = random.Next(lowerBound, upperBound);
+            int multipleOfNumberCount = 0;
+            int minThreeDigitNumber = 100;
+            int maxThreeDigitNumber = 999;
+
+            for (int i = minThreeDigitNumber; i <= maxThreeDigitNumber; i++)
+                for (int j = i; j >= 0; j-=number)
+                    if (j == 0)
+                        multipleOfNumberCount++;
+
+            Console.WriteLine(multipleOfNumberCount);
+            Console.ReadKey();
+        }
+    }
+}
