@@ -1,0 +1,25 @@
+using System;
+
+namespace Lessons
+{
+    class Lessons
+    {
+        private static void Main()
+        {
+            Random random = new Random();
+            int lowerBound = 0;
+            int upperBound = 1024;
+            int number = random.Next(lowerBound, upperBound + 1);
+            int basis = 2;
+            int degree = 0;
+
+            for (int i = 1; i <= number; i *= basis)
+                degree++;
+
+            int numberInDegree = (int)Math.Pow(basis, degree);
+            Console.WriteLine($"Заданное число: {number}\nНаименьшая степень числа {basis}: {degree}" +
+                $"\nПолучившееся число: {numberInDegree}\n\n{number} < {numberInDegree}");
+            Console.ReadKey();
+        }
+    }
+}
