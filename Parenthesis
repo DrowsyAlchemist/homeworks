@@ -6,10 +6,11 @@ namespace Lessons
     {
         private static void Main()
         {
-            string text = "() ( () ( ( () ) ) () ) ( ))";
+            string text = "())(()";
             int openingParenthesisCount = 0;
             int closingParenthesisCount = 0;
             int maxDepthOfNesting = 0;
+            bool invalidFormat = false;
 
             for (int i = 0, depthOfNesting = 0; i < text.Length; i++)
             {
@@ -25,8 +26,10 @@ namespace Lessons
                 }
                 if (depthOfNesting > maxDepthOfNesting)
                     maxDepthOfNesting = depthOfNesting;
+                if (depthOfNesting < 0)
+                    invalidFormat = true;
             }
-            if (openingParenthesisCount == closingParenthesisCount)
+            if (openingParenthesisCount == closingParenthesisCount && !invalidFormat)
                 Console.WriteLine(maxDepthOfNesting);
             else
                 Console.WriteLine("Неверный формат строки!");
