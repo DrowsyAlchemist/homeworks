@@ -1,0 +1,37 @@
+using System;
+
+namespace Lessons
+{
+    class Lessons
+    {
+        private static void Main()
+        {
+            string text = "() ( () ( ( () ) ) () ) ( ))";
+            int openingParenthesisCount = 0;
+            int closingParenthesisCount = 0;
+            int maxDepthOfNesting = 0;
+
+            for (int i = 0, depthOfNesting = 0; i < text.Length; i++)
+            {
+                if (text[i] == '(')
+                {
+                    openingParenthesisCount++;
+                    depthOfNesting++;
+                }
+                else if (text[i] == ')')
+                {
+                    closingParenthesisCount++;
+                    depthOfNesting--;
+                }
+                if (depthOfNesting > maxDepthOfNesting)
+                    maxDepthOfNesting = depthOfNesting;
+            }
+            if (openingParenthesisCount == closingParenthesisCount)
+                Console.WriteLine(maxDepthOfNesting);
+            else
+                Console.WriteLine("Неверный формат строки!");
+
+            Console.ReadKey();
+        }
+    }
+}
