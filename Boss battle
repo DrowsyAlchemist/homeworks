@@ -1,0 +1,209 @@
+using System;
+
+namespace Lessons
+{
+    class Lessons
+    {
+        private static void Main()
+        {
+            Random bossRandomDamage = new Random();
+            int bossDamageLowerBound = 50;
+            int bossDamageUpperBound = 150;
+            float bossMaxHealth = 1500;
+            float bossCurrentHealth = bossMaxHealth;
+            int bossDamage;
+            float playerMaxHealth = 500;
+            float playerCurrentHealth = playerMaxHealth;
+            string playerSpell = string.Empty;
+            //1
+            string fireWhirlwindName = "Огненный вихрь";
+            string fireWhirlwindDescription = "Призывает огненный вихрь, который наносит урон огнём по площади.";
+            int fireWhirlwindDamage = 200;
+            //2
+            string iceNeedleName = "Ледяная игла";
+            string iceNeedleDescription = "Создаёт ледяную иглу, которая наносит урон и замораживает противника на 1 ход.";
+            int iceNeedleDamage = 100;
+            bool isFrozen = false;
+            const int FreezingCanUseTimes = 1;      // Сколько раз можно воспользоваться
+            int freezingUsedTimes = 0;              // Сколько раз уже воспользовались
+            const int FreezingTime = 1;             // Сколько ходов может длиться действие
+            int freezingCounter = 0;                // Сколько ходов уже длится
+            //3
+            string smokeScreenName = "Дымовая завеса";
+            string smokeScreenDescription = "Скрывает игрока в облаке дыма.";
+            bool isSmokeScreen = false;
+            const int SmokeScreenCanUseTimes = 1;       // Сколько раз можно воспользоваться
+            int smokeScreenUsedTimes = 0;               // Сколько раз уже воспользовались
+            const int SmokeScreenTime = 1;              // Сколько ходов может длиться действие
+            int smokeScreenCounter = 0;                 // Сколько ходов уже длится
+            //4
+            string ghostlyDissectionName = "Призрачное рассечение";
+            string ghostlyDissectionDescription = "Удар в уязвимое место противника из тумана.";
+            int ghostlyDissectionDamage = 500;
+            //5
+            string rainingBloodName = "Кровавый дождь";
+            string rainingBloodDescription = "Действует при низком уровне здоровья. Маг использует собственную кровь для атаки.";
+            int rainingBloodRequiredHealthInPercents = 20;
+            int rainingBloodDamageInPercents = 30;
+            int rainingBloodDamage = (int)((float)bossMaxHealth * rainingBloodDamageInPercents / 100);
+
+            Console.BackgroundColor = ConsoleColor.DarkGray;
+            Console.ForegroundColor = ConsoleColor.White;
+            int windowWidth = 140;
+            int windowHeight = 55;
+            Console.SetWindowSize(windowWidth, windowHeight);
+            int cursorStartTopPosition = 14;
+            int cursorTopPosition = cursorStartTopPosition;
+            int winLostMessageCursorLeftPosition = 60;
+            int healthCursorTopPosition = 10;
+            string border = string.Empty;
+            int borderLength = 115;
+
+            for (int i = 0; i < borderLength; i++)
+                border += "-";
+
+            const int spellNamesAlignment = -22;
+            Console.SetCursorPosition(60, 0);
+            Console.WriteLine($"Книга заклинаний:" +
+                $"\n\n 1. {fireWhirlwindName + ":",spellNamesAlignment} {fireWhirlwindDescription}" +
+                $"\n 2. {iceNeedleName + ":",spellNamesAlignment} {iceNeedleDescription}" +
+                $"\n 3. {smokeScreenName + ":",spellNamesAlignment} {smokeScreenDescription}" +
+                $"\n 4. {ghostlyDissectionName + ":",spellNamesAlignment} {ghostlyDissectionDescription}" +
+                $"\n 5. {rainingBloodName + ":",spellNamesAlignment} {rainingBloodDescription}");
+            Console.WriteLine("\n" + border);
+
+            while (bossCurrentHealth > 0 && playerCurrentHealth > 0)
+            {
+                Console.SetCursorPosition(30, healthCursorTopPosition);
+                Console.Write($"Здоровье игрока: {playerCurrentHealth,-10}");
+                Console.SetCursorPosition(80, healthCursorTopPosition);
+                Console.Write($"Здоровье противника: {bossCurrentHealth,-10}");
+                Console.WriteLine("\n\n" + border);
+                Console.SetCursorPosition(0, cursorTopPosition);
+                Console.Write("Выберите заклинание: ");
+                playerSpell = Console.ReadLine();
+
+                switch (playerSpell)
+                {
+                    case "1":
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.WriteLine($"Вы призвали огненный вихрь. Противнику нанесено {fireWhirlwindDamage} урона.");
+                        Console.ForegroundColor = ConsoleColor.White;
+                        bossCurrentHealth -= fireWhirlwindDamage;
+                        break;
+                    case "2":
+                        if (freezingUsedTimes < FreezingCanUseTimes)
+                        {
+                            Console.ForegroundColor = ConsoleColor.Green;
+                            Console.WriteLine($"Вы призвали ледяную иглу. Противнику нанесено {iceNeedleDamage} урона. " +
+                                $"Следующий ход он не сможет двигаться.");
+                            Console.ForegroundColor = ConsoleColor.White;
+                            bossCurrentHealth -= iceNeedleDamage;
+                            isFrozen = true;
+                            freezingUsedTimes++;
+                        }
+                        else
+                            Console.WriteLine("Вы больше не можете использовать это заклинание.");
+                        break;
+                    case "3":
+                        if (smokeScreenUsedTimes < SmokeScreenCanUseTimes)
+                        {
+                            Console.WriteLine("Вы скрылись в облаке дыма.");
+                            isSmokeScreen = true;
+                            smokeScreenUsedTimes++;
+                        }
+                        else
+                            Console.WriteLine("Вы больше не можете использовать это заклинание.");
+                        break;
+                    case "4":
+                        if (isSmokeScreen)
+                        {
+                            Console.ForegroundColor = ConsoleColor.Green;
+                            Console.WriteLine($"Вы провели скрытую атаку. Противнику нанесено {ghostlyDissectionDamage} урона.");
+                            Console.ForegroundColor = ConsoleColor.White;
+                            bossCurrentHealth -= ghostlyDissectionDamage;
+                        }
+                        else
+                        {
+                            Console.WriteLine("Вы попытались провести скрытую атаку, но враг вас заметил.");
+                        }
+                        break;
+                    case "5":
+                        float playerHealthInPercents = (playerCurrentHealth / playerMaxHealth) * 100;
+
+                        if (playerHealthInPercents < rainingBloodRequiredHealthInPercents)
+                        {
+                            Console.ForegroundColor = ConsoleColor.Green;
+                            Console.WriteLine($"Вы использовали собственную кровь и провели мощнейшую атаку. " +
+                                $"Противнику нанесено {rainingBloodDamage} урона.");
+                            Console.ForegroundColor = ConsoleColor.White;
+                            bossCurrentHealth -= rainingBloodDamage;
+                        }
+                        else
+                        {
+                            Console.WriteLine("Вы недостаточно изранены для сотворения этого заклинания.");
+                        }
+                        break;
+                }
+                if (bossCurrentHealth <= 0)
+                    continue;
+
+                if (isFrozen)
+                {
+                    cursorTopPosition = Console.CursorTop + 1;
+
+                    if (freezingCounter < FreezingTime)
+                    {
+                        freezingCounter++;
+                        continue;
+                    }
+                    isFrozen = false;
+                    continue;
+                }
+                if (isSmokeScreen)
+                {
+                    cursorTopPosition = Console.CursorTop + 1;
+
+                    if (smokeScreenCounter < SmokeScreenTime)
+                    {
+                        smokeScreenCounter++;
+                        continue;
+                    }
+                    isSmokeScreen = false;
+                    continue;
+                }
+                bossDamage = bossRandomDamage.Next(bossDamageLowerBound, bossDamageUpperBound);
+                playerCurrentHealth -= bossDamage;
+                Console.ForegroundColor = ConsoleColor.DarkMagenta;
+                Console.WriteLine($"Вам нанесено {bossDamage} урона.");
+                Console.ForegroundColor = ConsoleColor.White;
+                cursorTopPosition = Console.CursorTop + 1;
+            }
+            if (bossCurrentHealth <= 0)
+            {
+                cursorTopPosition = Console.CursorTop + 1;
+                Console.SetCursorPosition(30, healthCursorTopPosition);
+                Console.Write($"Здоровье игрока: {playerCurrentHealth,-10}");
+                Console.SetCursorPosition(80, healthCursorTopPosition);
+                Console.Write($"Здоровье противника: {0,-10}");
+                Console.WriteLine("\n\n" + border);
+                Console.SetCursorPosition(winLostMessageCursorLeftPosition, cursorTopPosition);
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine("Вы победили!!!");
+            }
+            else
+            {
+                cursorTopPosition = Console.CursorTop + 1;
+                Console.SetCursorPosition(30, healthCursorTopPosition);
+                Console.Write($"Здоровье игрока: {0,-10}");
+                Console.SetCursorPosition(80, healthCursorTopPosition);
+                Console.Write($"Здоровье противника: {bossCurrentHealth,-10}");
+                Console.WriteLine("\n\n" + border);
+                Console.SetCursorPosition(winLostMessageCursorLeftPosition, cursorTopPosition);
+                Console.ForegroundColor = ConsoleColor.DarkMagenta;
+                Console.WriteLine("Вы проиграли!!!");
+            }
+            Console.ReadKey();
+        }
+    }
+}
