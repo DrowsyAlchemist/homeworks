@@ -6,6 +6,7 @@ namespace Lessons
     {
         private static void Main()
         {
+            const int MaxPercent = 100;
             Random bossRandomDamage = new Random();
             int bossDamageLowerBound = 50;
             int bossDamageUpperBound = 150;
@@ -14,7 +15,7 @@ namespace Lessons
             int bossDamage;
             float playerMaxHealth = 500;
             float playerCurrentHealth = playerMaxHealth;
-            string playerSpell = string.Empty;
+            string playerSpell;
             //1
             string fireWhirlwindName = "Огненный вихрь";
             string fireWhirlwindDescription = "Призывает огненный вихрь, который наносит урон огнём по площади.";
@@ -45,7 +46,7 @@ namespace Lessons
             string rainingBloodDescription = "Действует при низком уровне здоровья. Маг использует собственную кровь для атаки.";
             int rainingBloodRequiredHealthInPercents = 20;
             int rainingBloodDamageInPercents = 30;
-            int rainingBloodDamage = (int)((float)bossMaxHealth * rainingBloodDamageInPercents / 100);
+            int rainingBloodDamage = (int)((float)bossMaxHealth * rainingBloodDamageInPercents / MaxPercent);
 
             Console.BackgroundColor = ConsoleColor.DarkGray;
             Console.ForegroundColor = ConsoleColor.White;
@@ -64,8 +65,8 @@ namespace Lessons
 
             const int spellNamesAlignment = -22;
             Console.SetCursorPosition(60, 0);
-            Console.WriteLine($"Книга заклинаний:" +
-                $"\n\n 1. {fireWhirlwindName + ":",spellNamesAlignment} {fireWhirlwindDescription}" +
+            Console.WriteLine($"Книга заклинаний:\n" +
+                $"\n 1. {fireWhirlwindName + ":",spellNamesAlignment} {fireWhirlwindDescription}" +
                 $"\n 2. {iceNeedleName + ":",spellNamesAlignment} {iceNeedleDescription}" +
                 $"\n 3. {smokeScreenName + ":",spellNamesAlignment} {smokeScreenDescription}" +
                 $"\n 4. {ghostlyDissectionName + ":",spellNamesAlignment} {ghostlyDissectionDescription}" +
@@ -103,7 +104,9 @@ namespace Lessons
                             freezingUsedTimes++;
                         }
                         else
+                        {
                             Console.WriteLine("Вы больше не можете использовать это заклинание.");
+                        }
                         break;
                     case "3":
                         if (smokeScreenUsedTimes < SmokeScreenCanUseTimes)
@@ -111,9 +114,11 @@ namespace Lessons
                             Console.WriteLine("Вы скрылись в облаке дыма.");
                             isSmokeScreen = true;
                             smokeScreenUsedTimes++;
-                        }
+                        }                      
                         else
-                            Console.WriteLine("Вы больше не можете использовать это заклинание.");
+                        { 
+                                Console.WriteLine("Вы больше не можете использовать это заклинание.");
+                        }
                         break;
                     case "4":
                         if (isSmokeScreen)
@@ -129,7 +134,7 @@ namespace Lessons
                         }
                         break;
                     case "5":
-                        float playerHealthInPercents = (playerCurrentHealth / playerMaxHealth) * 100;
+                        float playerHealthInPercents = (playerCurrentHealth / playerMaxHealth) * MaxPercent;
 
                         if (playerHealthInPercents < rainingBloodRequiredHealthInPercents)
                         {
