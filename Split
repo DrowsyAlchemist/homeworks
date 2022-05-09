@@ -1,0 +1,18 @@
+using System;
+
+namespace Lessons
+{
+    class Lessons
+    {
+        public static void Main()
+        {
+            string text = "word1 word2 word3 word4";
+            string[] words = text.Split(' ');
+
+            foreach (var word in words)
+                Console.WriteLine(word);
+
+            Console.ReadLine();
+        }
+    }
+}
