@@ -1,0 +1,39 @@
+using System;
+
+namespace Lessons
+{
+    class Lessons
+    {
+        private static void Main()
+        {
+            string inputData = string.Empty;
+            int[] array = new int[0];
+
+            while (inputData != "exit")
+            {
+                int sum = 0;
+                inputData = Console.ReadLine();
+
+                if (inputData == "exit")
+                    break;
+
+                if (inputData == "sum")
+                {
+                    for (int i = 0; i < array.Length; i++)
+                        sum += array[i];
+
+                    Console.WriteLine("Сумма элементов массива: " + sum);
+                    continue;
+                }
+                int[] tempArray = new int[array.Length + 1];
+
+                for (int i = 0; i < array.Length; i++)
+                    tempArray[i] = array[i];
+
+                array = tempArray;
+                array[array.Length - 1] = Convert.ToInt32(inputData);
+            }
+            Console.ReadLine();
+        }
+    }
+}
