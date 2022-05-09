@@ -1,0 +1,43 @@
+using System;
+
+namespace Lessons
+{
+    class Lessons
+    {
+        private static void Main()
+        {
+            int[] array = new int[30];
+            Random random = new Random();
+            int randomLowerBound = 0;
+            int randomUpperBound = 10;
+
+            for (int i = 0; i < array.Length; i++)
+            {
+                array[i] = random.Next(randomLowerBound, randomUpperBound);
+                Console.Write(array[i] + " ");
+            }
+            int repeatingNumber = array[0];
+            int repetitionsCount = 1;
+
+            for (int i = 0, tempRepetitionsCount = 1; i < array.Length; i++)
+            {
+                for (int j = i; j < array.Length - 1; j++)
+                {
+                    if (array[j] == array[j + 1])
+                        tempRepetitionsCount++;
+                    else
+                        break;
+                }
+                if (tempRepetitionsCount > repetitionsCount)
+                {
+                    repetitionsCount = tempRepetitionsCount;
+                    repeatingNumber = array[i];
+                }
+                i += tempRepetitionsCount - 1;
+                tempRepetitionsCount = 1;
+            }
+            Console.WriteLine($"\n\nЧисло {repeatingNumber} повторяется большее число раз подряд ({repetitionsCount} раз).");
+            Console.ReadLine();
+        }
+    }
+}
