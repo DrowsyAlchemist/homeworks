@@ -1,0 +1,139 @@
+using System;
+
+namespace Lessons
+{
+    class Lessons
+    {
+        public static void Main()
+        {
+            string[] personNames = new string[0];
+            string[] personPosts = new string[0];
+            string inputData = string.Empty;
+
+            while (inputData != "5")
+            {
+                Console.WriteLine("1. Добавить досье" +
+                    "\n2. Вывести все досье" +
+                    "\n3. Удалить досье" +
+                    "\n4. Поиск по фамилии" +
+                    "\n5. Выход\n");
+                inputData = Console.ReadLine();
+
+                switch (inputData)
+                {
+                    case "1":
+                        AddDossier(ref personNames, ref personPosts);
+                        break;
+                    case "2":
+                        PrintDossiers(personNames, personPosts);
+                        break;
+                    case "3":
+                        DeleteDossier(ref personNames, ref personPosts);
+                        break;
+                    case "4":
+                        SearchByName(personNames, personPosts);
+                        break;
+                }
+                Console.Clear();
+            }
+        }
+
+        public static void AddDossier(ref string[] personNames, ref string[] personPosts)
+        {
+            Console.Clear();
+            Console.Write("ФИО: ");
+            string newPersonName = Console.ReadLine();
+            Console.Write("Должность: ");
+            string newPersonPost = Console.ReadLine();
+            ResizeArray(ref personNames);
+            ResizeArray(ref personPosts);
+            personNames[personNames.Length - 1] = newPersonName;
+            personPosts[personPosts.Length - 1] = newPersonPost;
+        }
+
+        public static void PrintDossiers(string[] personNames, string[] personPosts)
+        {
+            Console.Clear();
+
+            if (personNames.Length > 0)
+            {
+                for (int i = 0; i < personNames.Length; i++)
+                    Console.WriteLine($"{i + 1}. {personNames[i]} - {personPosts[i]}");
+            }
+            else
+            {
+                ErrorMessage("Досье не найдены.");
+            }
+            Console.ReadLine();
+        }
+        
+        private static void DeleteDossier(ref string[] personNames, ref string[] personPosts)
+        {
+            Console.Clear();
+            Console.Write("Введите порядковый номер человека, досье которого вы хотите удалить: ");
+            int personNumber = Convert.ToInt32(Console.ReadLine());
+
+            if (personNumber > 0 && personNumber < (personNames.Length + 1))
+            {
+                for (int i = personNumber - 1; i < personNames.Length - 1; i++)
+                {
+                    personNames[i] = personNames[i + 1];
+                    personPosts[i] = personPosts[i + 1];
+                }
+                ResizeArray(ref personNames, sizeShift: -1);
+                ResizeArray(ref personPosts, sizeShift: -1);
+            }
+            else
+            {
+                ErrorMessage("Ошибка! Номер не найден.");
+                Console.ReadLine();
+            }
+        }
+
+        public static void SearchByName(string[] personNames, string[] personPosts)
+        {
+            Console.Clear();
+            Console.Write("Введите фамилию: ");
+            string inputLastName = Console.ReadLine().ToLower();
+            string[] fullName;
+            int personNumber = 0;
+
+            for (int i = 0; i < personNames.Length; i++)
+            {
+                fullName = personNames[i].Split(' ');
+
+                if (inputLastName == fullName[0].ToLower())
+                {
+                    personNumber = i + 1;
+                    break;
+                }
+            }
+            if (personNumber == 0)
+                ErrorMessage("Ничего не найдено.");
+            else
+                Console.WriteLine($"\n{personNumber}. {personNames[personNumber - 1]} - {personPosts[personNumber - 1]}");
+
+            Console.ReadLine();
+        }
+
+        public static void ErrorMessage(string message)
+        {
+            ConsoleColor defaultForegroundColor = Console.ForegroundColor;
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine(message);
+            Console.ForegroundColor = defaultForegroundColor;
+        }
+
+        public static void ResizeArray(ref string[] array, int sizeShift = 1)
+        {
+            string[] tempArray = new string[array.Length + sizeShift];
+            int length = Math.Min(array.Length, tempArray.Length);
+
+            for (int i = 0; i < length; i++)
+            {
+                tempArray[i] = array[i];
+            }
+            array = tempArray;
+        }
+    }
+}
