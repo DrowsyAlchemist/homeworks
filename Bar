@@ -22,7 +22,7 @@ namespace Lessons
             {
                 string border = string.Empty;
 
-                for (int i = 0; i < maxPercent+2; i++)
+                for (int i = 0; i < maxPercent + 2; i++)
                     border += "=";
 
                 Console.SetCursorPosition(cursorStartPositionLeft, cursorStartPositionTop);
@@ -42,7 +42,7 @@ namespace Lessons
             }
             else
             {
-                throw new Exception("Процент должен быть от 0 до 100");
+                Console.WriteLine($"Ошибка! Процент должен быть от 0 до {maxPercent}.");
             }
         }
     }
