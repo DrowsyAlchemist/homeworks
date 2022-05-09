@@ -1,0 +1,35 @@
+using System;
+
+namespace Lessons
+{
+    class Lessons
+    {
+        private static void Main()
+        {
+            int[] array = new int[30];
+            Random random = new Random();
+            int randomLowerBound = 10;
+            int randomUpperBound = 50;
+            int lastElementIndex = array.Length - 1;
+
+            for (int i = 0; i < array.Length; i++)
+            {
+                array[i] = random.Next(randomLowerBound, randomUpperBound);
+                Console.Write(array[i] + " ");
+            }
+            Console.WriteLine("\n\nЛокальные максимумы:");
+
+            if (array.Length > 1 && array[0] > array[1])
+                Console.WriteLine($"00: {array[0]}");
+
+            for (int i = 1; i < array.Length - 1; i++)
+                if (array[i] > array[i - 1] && array[i] > array[i + 1])
+                    Console.WriteLine($"{i:D2}: {array[i]}");
+
+            if (array.Length > 1 && array[lastElementIndex] > array[lastElementIndex - 1])
+                Console.WriteLine($"{lastElementIndex:D2}: {array[lastElementIndex]}");
+
+            Console.ReadLine();
+        }
+    }
+}
