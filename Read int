@@ -1,0 +1,26 @@
+using System;
+
+namespace Lessons
+{
+    class Lessons
+    {
+        public static void Main()
+        {
+            int value = RequestInteger();
+            Console.WriteLine(value);
+            Console.ReadLine();
+        }
+
+        public static int RequestInteger()
+        { 
+            while (true)
+            {
+                Console.Write("Введите целое число: ");
+                bool success = int.TryParse(Console.ReadLine(), out int result);
+
+                if (success)
+                    return result;
+            }
+        }
+    }
+}
