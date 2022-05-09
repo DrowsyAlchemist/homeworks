@@ -1,0 +1,40 @@
+using System;
+
+namespace Lessons
+{
+    class Lessons
+    {
+        public static void Main()
+        {
+            int[] array = new int[5];
+            Random random = new Random();
+            int randomLowerBound = 0;
+            int randomUpperBound = 10;
+
+            for (int i = 0; i < array.Length; i++)
+            {
+                array[i] = random.Next(randomLowerBound, randomUpperBound);
+                Console.Write(array[i] + " ");
+            }
+            Console.Write("\n\nВведите число позиций для сдвига массива влево: ");
+            int positions = Convert.ToInt32(Console.ReadLine());
+
+            for (int i = 0; i < positions; i++)
+            {
+                int temp = array[0];
+
+                for (int j = 0; j < array.Length - 1; j++)
+                {
+                    array[j] = array[j + 1];
+                }
+                array[array.Length - 1] = temp;
+            }
+            Console.WriteLine("\nПолучившийся массив:");
+
+            foreach (int element in array)
+                Console.Write(element + " ");
+
+            Console.ReadLine();
+        }
+    }
+}
