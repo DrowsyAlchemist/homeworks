@@ -9,7 +9,7 @@ namespace Lessons
         {
             int customersCount = 10;
             Random random = new Random();
-            int randomLowerBound = 0;
+            int randomLowerBound = 1;
             int randomUpperBound = 100;
             Queue<int> purchaseSum = new Queue<int>();
             int account = 0;
@@ -20,8 +20,9 @@ namespace Lessons
             }
             while (purchaseSum.Count > 0)
             {
-                account+= purchaseSum.Peek();
-                Console.WriteLine($"Клиент обслужен.\nСумма покупки: {purchaseSum.Dequeue()}\nВаш счёт: {account}");
+                account += purchaseSum.Peek();
+                Console.WriteLine($"Клиент обслужен.\nСумма покупки: {purchaseSum.Peek()}\nВаш счёт: {account}");
+                purchaseSum.Dequeue();
                 Console.ReadKey();
                 Console.Clear();
             }
