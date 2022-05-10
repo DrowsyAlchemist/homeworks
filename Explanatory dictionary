@@ -35,9 +35,18 @@ namespace Lessons
             Console.Clear();
             Console.Write("Слово: ");
             string word = Console.ReadLine();
-            Console.Write("Значение: ");
-            string meaning = Console.ReadLine();
-            wordsMeanings.Add(word, meaning);
+
+            if (!wordsMeanings.ContainsKey(word))
+            {
+                Console.Write("Значение: ");
+                string meaning = Console.ReadLine();
+                wordsMeanings.Add(word, meaning);
+            }
+            else
+            {
+                PrintErrorMessage("Это слово уже есть в словаре.");
+                Console.ReadKey();
+            }
             Console.Clear();
         }
 
@@ -48,18 +57,20 @@ namespace Lessons
             string word = Console.ReadLine();
 
             if (wordsMeanings.ContainsKey(word))
-            {
                 Console.WriteLine($"Значение: {wordsMeanings[word]}");
-            }
             else
-            {
-                ConsoleColor defaultColor = Console.ForegroundColor;
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Слово не найдено!");
-                Console.ForegroundColor = defaultColor;
-            }
+                PrintErrorMessage("Слово не найдено!");
+
             Console.ReadLine();
             Console.Clear();
+        }
+
+        public static void PrintErrorMessage(string message)
+        {
+            ConsoleColor defaultColor = Console.ForegroundColor;
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine(message);
+            Console.ForegroundColor = defaultColor;
         }
     }
 }
