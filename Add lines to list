@@ -1,0 +1,29 @@
+using System;
+using System.Collections.Generic;
+
+namespace Lessons
+{
+    class Lessons
+    {
+        public static void Main()
+        {
+            string[] lines1 = { "1", "2", "1" };
+            string[] lines2 = { "3", "2", "4","3","1","5","2" };
+            List<string> list = new List<string>();
+            AddLinesToListWithoutRepetition(list, lines1);
+            AddLinesToListWithoutRepetition(list, lines2);
+
+            for (int i = 0; i < list.Count; i++)
+                Console.Write(list[i] + " ");
+
+            Console.ReadKey();
+        }
+
+        public static void AddLinesToListWithoutRepetition(List<string> list, string[] lines)
+        {
+            for (int i = 0; i < lines.Length; i++)
+                if (list.Contains(lines[i]) == false)
+                    list.Add(lines[i]);
+        }
+    }
+}
