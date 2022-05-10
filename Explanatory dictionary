@@ -1,0 +1,65 @@
+using System;
+using System.Collections.Generic;
+
+namespace Lessons
+{
+    class Lessons
+    {
+        public static void Main()
+        {
+            Dictionary<string, string> wordsMeanings = new Dictionary<string, string>();
+            string inputData = string.Empty;
+
+            while (inputData != "3")
+            {
+                Console.WriteLine("1. Добавить слово\n2. Узнать значение слова\n3. Выйти\n");
+                inputData = Console.ReadLine();
+
+                switch (inputData)
+                {
+                    case "1":
+                        AddWord(wordsMeanings);
+                        break;
+                    case "2":
+                        PrintMeaning(wordsMeanings);
+                        break;
+                    default:
+                        Console.Clear();
+                        break;
+                }
+            }
+        }
+
+        private static void AddWord(Dictionary<string, string> wordsMeanings)
+        {
+            Console.Clear();
+            Console.Write("Слово: ");
+            string word = Console.ReadLine();
+            Console.Write("Значение: ");
+            string meaning = Console.ReadLine();
+            wordsMeanings.Add(word, meaning);
+            Console.Clear();
+        }
+
+        private static void PrintMeaning(Dictionary<string, string> wordsMeanings)
+        {
+            Console.Clear();
+            Console.Write("Слово: ");
+            string word = Console.ReadLine();
+
+            if (wordsMeanings.ContainsKey(word))
+            {
+                Console.WriteLine($"Значение: {wordsMeanings[word]}");
+            }
+            else
+            {
+                ConsoleColor defaultColor = Console.ForegroundColor;
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Слово не найдено!");
+                Console.ForegroundColor = defaultColor;
+            }
+            Console.ReadLine();
+            Console.Clear();
+        }
+    }
+}
