@@ -25,21 +25,21 @@ namespace Lessons
                 {'#','X','X','#',' ',' ','X','X','#',' ','#',' ',' ',' ','X','X','X','X','X','X',' ','#'},
                 {'#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#'}
             };
-            int playerX = 0;
-            int playerY = 0;
+            int playerXPosition = 0;
+            int playerYPosition = 0;
             char playerSymbol = '@';
-            GetPlayerCoordinates(map, playerSymbol, ref playerX, ref playerY);
+            GetPlayerCoordinates(map, playerSymbol, ref playerXPosition, ref playerYPosition);
             Console.CursorVisible = false;
 
             while (isAlive)
             {
                 PrintMap(map);
                 ConsoleKey key = Console.ReadKey().Key;
-                Move(map, ref playerX, ref playerY, key);
+                Move(map, ref playerXPosition, ref playerYPosition, key);
                 Console.SetCursorPosition(0, 0);
             }
-            map[playerY, playerX] = '+';
-            PrintMap(map); 
+            map[playerYPosition, playerXPosition] = '+';
+            PrintMap(map);
             Console.SetCursorPosition(0, 15);
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine("Вы наступили на шип! Игра окончена.");
@@ -58,7 +58,7 @@ namespace Lessons
             }
         }
 
-        public static void GetPlayerCoordinates(char[,] map, char playerSymbol, ref int x, ref int y)
+        public static void GetPlayerCoordinates(char[,] map, char playerSymbol, ref int playerXPosition, ref int playerYPosition)
         {
             for (int i = 0; i < map.GetLength(0); i++)
             {
@@ -66,8 +66,8 @@ namespace Lessons
                 {
                     if (map[i, j] == playerSymbol)
                     {
-                        y = i;
-                        x = j;
+                        playerYPosition = i;
+                        playerXPosition = j;
                         return;
                     }
                 }
@@ -75,52 +75,52 @@ namespace Lessons
             throw new Exception("На карте нет игрока.");
         }
 
-        public static void Move(char[,] map, ref int characterX, ref int characterY, ConsoleKey key)
+        public static void Move(char[,] map, ref int characterXPosition, ref int characterYPosition, ConsoleKey key)
         {
-            int characterDX;
-            int characterDY;
-            GetCoordinateShift(key, out characterDX, out characterDY);
+            int characterDeltaXPosition;
+            int characterDeltaYPosition;
+            GetCoordinateShift(key, out characterDeltaXPosition, out characterDeltaYPosition);
 
-            if (map[characterY, (characterX + characterDX)] == 'X'
-                || map[(characterY + characterDY), characterX] == 'X')
+            if (map[characterYPosition, (characterXPosition + characterDeltaXPosition)] == 'X'
+                || map[(characterYPosition + characterDeltaYPosition), characterXPosition] == 'X')
             {
                 isAlive = false;
                 return;
             }
-            if (map[characterY, (characterX + characterDX)] != '#'
-                && map[(characterY + characterDY), characterX] != '#')
+            if (map[characterYPosition, (characterXPosition + characterDeltaXPosition)] != '#'
+                && map[(characterYPosition + characterDeltaYPosition), characterXPosition] != '#')
             {
-                char characterSymbol = map[characterY, characterX];
-                map[characterY, characterX] = ' ';
-                characterX += characterDX;
-                characterY += characterDY;
-                map[characterY, characterX] = characterSymbol;
+                char characterSymbol = map[characterYPosition, characterXPosition];
+                map[characterYPosition, characterXPosition] = ' ';
+                characterXPosition += characterDeltaXPosition;
+                characterYPosition += characterDeltaYPosition;
+                map[characterYPosition, characterXPosition] = characterSymbol;
             }
         }
 
-        public static void GetCoordinateShift(ConsoleKey key, out int dX, out int dY)
+        public static void GetCoordinateShift(ConsoleKey key, out int deltaXCoordinate, out int deltaYCoordinate)
         {
             switch (key)
             {
                 case ConsoleKey.UpArrow:
-                    dX = 0;
-                    dY = -1;
+                    deltaXCoordinate = 0;
+                    deltaYCoordinate = -1;
                     break;
                 case ConsoleKey.DownArrow:
-                    dX = 0;
-                    dY = 1;
+                    deltaXCoordinate = 0;
+                    deltaYCoordinate = 1;
                     break;
                 case ConsoleKey.LeftArrow:
-                    dX = -1;
-                    dY = 0;
+                    deltaXCoordinate = -1;
+                    deltaYCoordinate = 0;
                     break;
                 case ConsoleKey.RightArrow:
-                    dX = 1;
-                    dY = 0;
+                    deltaXCoordinate = 1;
+                    deltaYCoordinate = 0;
                     break;
                 default:
-                    dX = 0;
-                    dY = 0;
+                    deltaXCoordinate = 0;
+                    deltaYCoordinate = 0;
                     break;
             }
         }
