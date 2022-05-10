@@ -1,0 +1,30 @@
+using System;
+using System.Collections.Generic;
+
+namespace Lessons
+{
+    class Lessons
+    {
+        public static void Main()
+        {
+            int customersCount = 10;
+            Random random = new Random();
+            int randomLowerBound = 0;
+            int randomUpperBound = 100;
+            Queue<int> purchaseSum = new Queue<int>();
+            int account = 0;
+
+            for (int i = 0; i < customersCount; i++)
+            {
+                purchaseSum.Enqueue(random.Next(randomLowerBound, randomUpperBound));
+            }
+            while (purchaseSum.Count > 0)
+            {
+                account+= purchaseSum.Peek();
+                Console.WriteLine($"Клиент обслужен.\nСумма покупки: {purchaseSum.Dequeue()}\nВаш счёт: {account}");
+                Console.ReadKey();
+                Console.Clear();
+            }
+        }
+    }
+}
