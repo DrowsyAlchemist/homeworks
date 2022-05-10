@@ -11,7 +11,7 @@ namespace Lessons
             for (int i = 0; i < array.Length; i++)
                 Console.Write(array[i] + " ");
 
-            array = Shuffle(array);
+            Shuffle(array);
             Console.WriteLine("\n");
 
             for (int i = 0; i < array.Length; i++)
@@ -20,12 +20,12 @@ namespace Lessons
             Console.ReadKey();
         }
 
-        private static int[] Shuffle(int[] array)
+        private static void Shuffle(int[] array)
         {
             Random random = new Random();
             int randomLowerBound = 0;
             int randomUpperBound = array.Length - 1;
-            
+
             for (int i = 0; i < array.Length; i++)
             {
                 int randomIndex = random.Next(randomLowerBound, randomUpperBound);
@@ -33,7 +33,6 @@ namespace Lessons
                 array[i] = array[randomIndex];
                 array[randomIndex] = temp;
             }
-            return array;
         }
     }
 }
