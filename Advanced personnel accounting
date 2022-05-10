@@ -1,0 +1,100 @@
+using System;
+using System.Collections.Generic;
+
+namespace Lessons
+{
+    class Lessons
+    {
+        public static void Main()
+        {
+            Dictionary<string, string> people = new Dictionary<string, string>();
+            string inputData = string.Empty;
+
+            while (inputData != "4")
+            {
+                Console.WriteLine("1. Добавить досье" +
+                    "\n2. Вывести все досье" +
+                    "\n3. Удалить досье" +
+                    "\n4. Выход\n");
+                inputData = Console.ReadLine();
+                Console.Clear();
+
+                switch (inputData)
+                {
+                    case "1":
+                        AddDossier(people);
+                        break;
+                    case "2":
+                        PrintDossiers(people);
+                        break;
+                    case "3":
+                        DeleteDossier(people);
+                        break;
+                }
+                Console.Clear();
+            }
+        }
+
+        public static void AddDossier(Dictionary<string, string> people)
+        {
+            Console.Write("ФИО: ");
+            string newPersonName = Console.ReadLine();
+
+            if (people.ContainsKey(newPersonName) == false)
+            {
+                Console.Write("Должность: ");
+                string newPersonPost = Console.ReadLine();
+                people.Add(newPersonName, newPersonPost);
+            }
+            else
+            {
+                ErrorMessage("Такое имя уже есть.");
+                Console.ReadKey(); 
+            }
+        }
+
+        public static void PrintDossiers(Dictionary<string, string> people)
+        {
+            if (people.Count > 0)
+            {
+                int personNumber = 1;
+
+                foreach (var person in people)
+                {
+                    Console.WriteLine($"{personNumber}. {person.Key} - {person.Value}");
+                    personNumber++;
+                }
+            }
+            else
+            {
+                ErrorMessage("Досье не найдены.");
+            }
+
+            Console.ReadLine();
+        }
+
+        private static void DeleteDossier(Dictionary<string, string> people)
+        {
+            Console.Write("Введите ФИО человека, досье которого вы хотите удалить: ");
+            string nameToRemove = Console.ReadLine();
+
+            if (people.ContainsKey(nameToRemove))
+            {
+                people.Remove(nameToRemove);
+            }
+            else
+            {
+                ErrorMessage("Ошибка! Номер не найден.");
+                Console.ReadLine();
+            }
+        }
+
+        public static void ErrorMessage(string message)
+        {
+            ConsoleColor defaultForegroundColor = Console.ForegroundColor;
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine(message);
+            Console.ForegroundColor = defaultForegroundColor;
+        }
+    }
+}
