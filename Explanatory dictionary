@@ -36,7 +36,7 @@ namespace Lessons
             Console.Write("Слово: ");
             string word = Console.ReadLine();
 
-            if (!wordsMeanings.ContainsKey(word))
+            if (wordsMeanings.ContainsKey(word) == false)
             {
                 Console.Write("Значение: ");
                 string meaning = Console.ReadLine();
