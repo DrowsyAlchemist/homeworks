@@ -1,0 +1,128 @@
+using System;
+
+namespace Lessons
+{
+    class Lessons
+    {
+        static bool isAlive = true;
+
+        public static void Main()
+        {
+            char[,] map =
+            {
+                {'#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#'},
+                {'#',' ','#','X','X',' ',' ',' ',' ',' ',' ',' ','X','#','#',' ',' ','#','#','#',' ','#'},
+                {'#',' ','#',' ',' ',' ',' ',' ','X',' ',' ',' ',' ','#','#',' ',' ',' ','#','#',' ','#'},
+                {'#',' ','#','#','#',' ','X',' ','X',' ',' ',' ',' ',' ','#',' ',' ',' ',' ','#',' ','#'},
+                {'#',' ','#','#','#','#','#',' ','#',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','#',' ','#'},
+                {'#',' ',' ',' ',' ',' ',' ',' ','#','#',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','#'},
+                {'#','X',' ',' ',' ',' ',' ',' ',' ','#','#',' ',' ',' ',' ',' ',' ',' ',' ','#',' ','#'},
+                {'#',' ',' ',' ','#','X','X',' ','@',' ','#','#','#',' ',' ',' ',' ',' ',' ','#',' ','#'},
+                {'#',' ',' ',' ','#',' ',' ',' ',' ',' ',' ',' ','#','#','#',' ',' ',' ',' ','#',' ','#'},
+                {'#',' ',' ',' ','#',' ',' ',' ',' ',' ',' ',' ',' ','#','#',' ',' ',' ',' ','#','#','#'},
+                {'#',' ',' ','#','#',' ',' ',' ',' ',' ',' ',' ','#','#',' ',' ',' ','X',' ',' ',' ','#'},
+                {'#',' ',' ','#',' ',' ',' ',' ','#',' ','#',' ','#',' ',' ',' ','X','X','X',' ',' ','#'},
+                {'#','X','X','#',' ',' ','X','X','#',' ','#',' ',' ',' ','X','X','X','X','X','X',' ','#'},
+                {'#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#'}
+            };
+            int playerX = 0;
+            int playerY = 0;
+            char playerSymbol = '@';
+            GetPlayerCoordinates(map, playerSymbol, ref playerX, ref playerY);
+            Console.CursorVisible = false;
+
+            while (isAlive)
+            {
+                PrintMap(map);
+                ConsoleKey key = Console.ReadKey().Key;
+                Move(map, ref playerX, ref playerY, key);
+                Console.SetCursorPosition(0, 0);
+            }
+            map[playerY, playerX] = '+';
+            PrintMap(map); 
+            Console.SetCursorPosition(0, 15);
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("Вы наступили на шип! Игра окончена.");
+            Console.ReadKey();
+        }
+
+        public static void PrintMap(char[,] map)
+        {
+            for (int i = 0; i < map.GetLength(0); i++)
+            {
+                for (int j = 0; j < map.GetLength(1); j++)
+                {
+                    Console.Write(map[i, j]);
+                }
+                Console.WriteLine();
+            }
+        }
+
+        public static void GetPlayerCoordinates(char[,] map, char playerSymbol, ref int x, ref int y)
+        {
+            for (int i = 0; i < map.GetLength(0); i++)
+            {
+                for (int j = 0; j < map.GetLength(1); j++)
+                {
+                    if (map[i, j] == playerSymbol)
+                    {
+                        y = i;
+                        x = j;
+                        return;
+                    }
+                }
+            }
+            throw new Exception("На карте нет игрока.");
+        }
+
+        public static void Move(char[,] map, ref int characterX, ref int characterY, ConsoleKey key)
+        {
+            int characterDX;
+            int characterDY;
+            GetCoordinateShift(key, out characterDX, out characterDY);
+
+            if (map[characterY, (characterX + characterDX)] == 'X'
+                || map[(characterY + characterDY), characterX] == 'X')
+            {
+                isAlive = false;
+                return;
+            }
+            if (map[characterY, (characterX + characterDX)] != '#'
+                && map[(characterY + characterDY), characterX] != '#')
+            {
+                char characterSymbol = map[characterY, characterX];
+                map[characterY, characterX] = ' ';
+                characterX += characterDX;
+                characterY += characterDY;
+                map[characterY, characterX] = characterSymbol;
+            }
+        }
+
+        public static void GetCoordinateShift(ConsoleKey key, out int dX, out int dY)
+        {
+            switch (key)
+            {
+                case ConsoleKey.UpArrow:
+                    dX = 0;
+                    dY = -1;
+                    break;
+                case ConsoleKey.DownArrow:
+                    dX = 0;
+                    dY = 1;
+                    break;
+                case ConsoleKey.LeftArrow:
+                    dX = -1;
+                    dY = 0;
+                    break;
+                case ConsoleKey.RightArrow:
+                    dX = 1;
+                    dY = 0;
+                    break;
+                default:
+                    dX = 0;
+                    dY = 0;
+                    break;
+            }
+        }
+    }
+}
