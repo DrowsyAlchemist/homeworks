@@ -1,0 +1,37 @@
+using System;
+using System.Collections.Generic;
+
+namespace Lessons
+{
+    class Lessons
+    {
+        private static void Main()
+        {
+            string inputData = string.Empty;
+            List<int> list = new List<int>();
+
+            while (inputData != "exit")
+            {
+                int sum = 0;
+                inputData = Console.ReadLine();
+
+                if (inputData == "sum")
+                {
+                    for (int i = 0; i < list.Count; i++)
+                        sum += list[i];
+
+                    Console.WriteLine("Сумма элементов массива: " + sum);
+                }
+                else if (inputData != "exit")
+                {
+                    bool isInteger = int.TryParse(inputData, out int newInteger);
+
+                    if (isInteger)
+                        list.Add(newInteger);
+                    else
+                        Console.WriteLine("Ошибка ввода!");
+                }
+            }
+        }
+    }
+}
