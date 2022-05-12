@@ -1,0 +1,205 @@
+using System;
+using System.Collections.Generic;
+
+namespace Lessons
+{
+    class Lessons
+    {
+        public static void Main()
+        {
+            Player player = new Player();
+            CardDeck cardDeck = new CardDeck();
+            Game game = new Game(player, cardDeck);
+            game.Run();
+        }
+    }
+
+    class Game
+    {
+        private Player _player;
+        private CardDeck _deck;
+
+        public Game(Player player, CardDeck deck)
+        {
+            _player = player;
+            _deck = deck;
+        }
+
+        public void Run()
+        {
+            _deck.Shuffle();
+            string inputData = string.Empty;
+
+            while (inputData != "2")
+            {
+                Console.WriteLine("1. Взять карту\n2. Мне хватит\n");
+                inputData = Console.ReadLine();
+                Console.Clear();
+
+                if (inputData == "1")
+                    GiveCardToPlayer();
+
+                if (inputData == "2")
+                    _player.ShowHand();
+
+                Console.ReadLine();
+                Console.Clear();
+            }
+        }
+
+        private void GiveCardToPlayer()
+        {
+            if (_deck.IsEmpty())
+            {
+                Console.WriteLine("Колода пуста!");
+            }
+            else
+            {
+                _player.TakeCard(_deck.Pick());
+                Console.WriteLine("Вы взяли карту.\n");
+                _player.ShowLastCard();
+            }
+        }
+    }
+
+    class Card
+    {
+        private int _points;
+        public Suit Suit { get; private set; }
+        public CardName Name { get; private set; }
+
+        public Card(Suit suit, CardName name)
+        {
+            Suit = suit;
+            Name = name;
+
+            if (name == CardName.Ace)
+                _points = 1;
+            else
+                _points = (int)name;
+        }
+
+        public void ShowInfo()
+        {
+            Console.WriteLine($"Карта: {Name,-5}\t\tМасть: {Suit,-8}\t\tСтоит очков: {_points,2}");
+        }
+    }
+
+    class CardDeck
+    {
+        public const int CardsInDeck = 36;
+        private const int SuitCount = 4;
+        private const int CardsOfSameSuit = CardsInDeck / SuitCount;
+        private Stack<Card> _deck;
+
+
+        public CardDeck()
+        {
+            _deck = GetFilledDeck();
+        }
+
+        private Stack<Card> GetFilledDeck()
+        {
+            Stack<Card> cards = new Stack<Card>(CardsInDeck);
+            Suit newCardSuit;
+            CardName newCardName;
+
+            for (int i = 0; i < SuitCount; i++)
+            {
+                newCardSuit = (Suit)i;
+
+                for (int j = 0; j < CardsOfSameSuit; j++)
+                {
+                    newCardName = (CardName)(j + (int)CardName.Six);
+                    cards.Push(new Card(newCardSuit, newCardName));
+                }
+            }
+            return cards;
+        }
+
+        public void Shuffle()
+        {
+            Card[] tempDeckArray = new Card[CardsInDeck];
+            _deck.CopyTo(tempDeckArray, 0);
+            Random random = new Random();
+            int randomLowerBound = 0;
+            int randomUpperBound = tempDeckArray.Length - 1;
+
+            for (int i = 0; i < tempDeckArray.Length; i++)
+            {
+                int randomIndex = random.Next(randomLowerBound, randomUpperBound);
+                Card temp = tempDeckArray[i];
+                tempDeckArray[i] = tempDeckArray[randomIndex];
+                tempDeckArray[randomIndex] = temp;
+            }
+            Stack<Card> tempDeckStack = new Stack<Card>(CardsInDeck);
+
+            for (int i = 0; i < tempDeckArray.Length; i++)
+                tempDeckStack.Push(tempDeckArray[i]);
+
+            _deck = tempDeckStack;
+        }
+
+        public Card Pick()
+        {
+            return _deck.Pop();
+        }
+
+        public void Print()
+        {
+            foreach (Card card in _deck)
+                card.ShowInfo();
+        }
+
+        public bool IsEmpty()
+        {
+            return _deck.Count <= 0;
+        }
+    }
+
+    class Player
+    {
+        private List<Card> _hand = new List<Card>();
+
+        public void TakeCard(Card card)
+        {
+            _hand.Add(card);
+        }
+
+        public void ShowLastCard()
+        {
+            _hand[_hand.Count - 1].ShowInfo();
+        }
+
+        public void ShowHand()
+        {
+            Console.WriteLine("Ваши карты:\n");
+
+            foreach (Card card in _hand)
+            {
+                card.ShowInfo();
+            }
+        }
+    }
+
+    enum CardName
+    {
+        Six = 6,
+        Seven,
+        Eight,
+        Nine,
+        Ten,
+        Jack,
+        Queen,
+        King,
+        Ace
+    }
+
+    enum Suit
+    {
+        Spades,
+        Hearts,
+        Clubs,
+        Diamonds
+    }
+}
