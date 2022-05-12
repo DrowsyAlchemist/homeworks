@@ -1,0 +1,33 @@
+using System;
+
+namespace Lessons
+{
+    class Lessons
+    {
+        public static void Main()
+        {
+            Player player = new Player(123, "Rob", 2.3);
+            player.ShowInfo();
+            Console.ReadLine();
+        }
+    }
+
+    class Player
+    {
+        private int _id;
+        private string _name;
+        private double _speed;
+
+        public Player(int id, string name, double speed)
+        {
+            _id = id;
+            _name = name;
+            _speed = speed;
+        }
+
+        public void ShowInfo()
+        {
+            Console.WriteLine($"Игрок № {_id}. Имя: {_name}; Скорость: {_speed}");
+        }
+    }
+}
