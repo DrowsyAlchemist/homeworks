@@ -33,32 +33,63 @@ namespace Lessons
                 switch (inputData)
                 {
                     case "1":
-                        Console.Write("Введите никнейм: ");
-                        string playerNickname = Console.ReadLine();
-                        dataBase.AddPlayer(playerNickname);
+                        AddPlayer(dataBase);
                         break;
                     case "2":
+                        BanPlayer(dataBase);
+                        break;
                     case "3":
+                        UnBanPlayer(dataBase);
+                        break;
                     case "4":
-                        Console.Write("Введите id: ");
-                        int.TryParse(Console.ReadLine(), out int playerId);
-
-                        if (inputData == "2")
-                            dataBase.BanPlayer(playerId);
-                        else if (inputData == "3")
-                            dataBase.UnBanPlayer(playerId);
-                        else
-                            dataBase.RemovePlayer(playerId);
-
-                        Console.ReadLine();
+                        RemovePlayer(dataBase);
                         break;
                     case "5":
-                        dataBase.PrintPlayersInfo();
-                        Console.ReadLine();
+                        PrintPlayersInfo(dataBase);
                         break;
                 }
                 Console.Clear();
             }
+        }
+        private static void AddPlayer(DataBase dataBase)
+        {
+            Console.Write("Введите никнейм: ");
+            string playerNickname = Console.ReadLine();
+            dataBase.AddPlayer(playerNickname);
+        }
+
+        private static void BanPlayer(DataBase dataBase)
+        {
+            int playerId = GetId();
+            dataBase.BanPlayer(playerId);
+            Console.ReadLine();
+        }
+
+        private static void UnBanPlayer(DataBase dataBase)
+        {
+            int playerId = GetId();
+            dataBase.UnBanPlayer(playerId);
+            Console.ReadLine();
+        }
+
+        private static void RemovePlayer(DataBase dataBase)
+        {
+            int playerId = GetId();
+            dataBase.RemovePlayer(playerId);
+            Console.ReadLine();
+        }
+
+        private static void PrintPlayersInfo(DataBase dataBase)
+        {
+            dataBase.PrintPlayersInfo();
+            Console.ReadLine();
+        }
+
+        private static int GetId()
+        {
+            Console.Write("Введите id: ");
+            int.TryParse(Console.ReadLine(), out int playerId);
+            return playerId;
         }
     }
 
