@@ -66,13 +66,39 @@ namespace Lessons
     {
         public readonly int Id;
         private int _level = 0;
-        public bool IsBanned { get; set; } = false;
+        public bool IsBanned { get; private set; } = false;
         public string Nickname { get; private set; }
 
         public Player(int id, string nickname)
         {
             Id = id;
             Nickname = nickname;
+        }
+
+        public void Ban()
+        {
+            if (IsBanned)
+            {
+                Console.WriteLine("Игрок уже был забанен.");
+            }
+            else
+            {
+                IsBanned = true;
+                Console.WriteLine("Игрок забанен.");
+            }
+        }
+
+        public void UnBan()
+        {
+            if (!IsBanned)
+            {
+                Console.WriteLine("Игрок не был забанен.");
+            }
+            else
+            {
+                IsBanned = false;
+                Console.WriteLine("Игрок разбанен.");
+            }
         }
 
         public void GetInfo()
@@ -90,53 +116,35 @@ namespace Lessons
 
     class DataBase
     {
-        private const int _minId = 1000;
-        private const int _maxId = 9999;
-        public readonly List<Player> players = new List<Player>();
-        Random random = new Random();
+        private const int MinId = 1000;
+        private const int MaxId = 9999;
+        private List<Player> _players = new List<Player>();
+        private Random _random = new Random();
 
         public void AddPlayer(string nickname)
         {
             int newPlayerId = GenerateUniqueId();
-            players.Add(new Player(newPlayerId, nickname));
+            _players.Add(new Player(newPlayerId, nickname));
         }
 
         public void BanPlayer(int playerId)
         {
             int playerIndex = GetPlayerIndex(playerId);
 
-            if (playerId < _minId)
-            {
+            if (playerId < MinId)
                 Console.WriteLine("Игрок не найден.");
-            }
-            else if (IsBanned(playerId))
-            {
-                Console.WriteLine("Игрок уже был забанен.");
-            }
             else
-            {
-                players[playerIndex].IsBanned = true;
-                Console.WriteLine("Игрок забанен.");
-            }
+                _players[playerIndex].Ban();
         }
 
         public void UnBanPlayer(int playerId)
         {
             int playerIndex = GetPlayerIndex(playerId);
 
-            if (playerId < _minId)
-            {
+            if (playerId < MinId)
                 Console.WriteLine("Игрок не найден.");
-            }
-            else if (IsBanned(playerId) == false)
-            {
-                Console.WriteLine("Игрок не был забанен.");
-            }
             else
-            {
-                players[playerIndex].IsBanned = false;
-                Console.WriteLine("Игрок разбанен.");
-            }
+                _players[playerIndex].UnBan();
         }
 
         public void RemovePlayer(int playerId)
@@ -149,29 +157,23 @@ namespace Lessons
             }
             else
             {
-                players.RemoveAt(playerIndex);
+                _players.RemoveAt(playerIndex);
                 Console.WriteLine("Игрок удалён.");
             }
         }
 
         public void PrintPlayersInfo()
         {
-            foreach (var player in players)
+            foreach (var player in _players)
                 player.GetInfo();
         }
 
         private int GetPlayerIndex(int playerId)
         {
-            for (int i = 0; i < players.Count; i++)
-                if (players[i].Id == playerId)
+            for (int i = 0; i < _players.Count; i++)
+                if (_players[i].Id == playerId)
                     return i;
             return -1;
-        }
-
-        private bool IsBanned(int playerId)
-        {
-            int playerIndex = GetPlayerIndex(playerId);
-            return players[playerIndex].IsBanned;
         }
 
         private int GenerateUniqueId()
@@ -182,9 +184,9 @@ namespace Lessons
             do
             {
                 isUniqueId = true;
-                newPlayerid = random.Next(_minId, _maxId + 1);
+                newPlayerid = _random.Next(MinId, MaxId + 1);
 
-                foreach (Player player in players)
+                foreach (Player player in _players)
                 {
                     if (player.Id == newPlayerid)
                     {
