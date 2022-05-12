@@ -1,0 +1,38 @@
+using System;
+
+namespace Lessons
+{
+    class Lessons
+    {
+        public static void Main()
+        {
+            Player player = new Player('@', 5, 10);
+            Renderer renderer = new Renderer();
+            renderer.DwawPlayer(player);
+            Console.ReadLine();
+        }
+    }
+
+    class Player
+    {
+        public int CoordinateX { get; private set; }
+        public int CoordinateY { get; private set; }
+        public char Symbol { get; }
+
+        public Player(char symbol, int coordinateX, int coordinateY)
+        {
+            Symbol = symbol;
+            CoordinateX = coordinateX;
+            CoordinateY = coordinateY;
+        }
+    }
+
+    class Renderer
+    {
+        public void DwawPlayer(Player player)
+        {
+            Console.SetCursorPosition(player.CoordinateX, player.CoordinateY);
+            Console.Write(player.Symbol);
+        }
+    }
+}
