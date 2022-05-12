@@ -1,0 +1,200 @@
+using System;
+using System.Collections.Generic;
+
+namespace Lessons
+{
+    class Lessons
+    {
+        public static void Main()
+        {
+            DataBase dataBase = new DataBase();
+            AdminMenu.Work(dataBase);
+        }
+    }
+
+    static class AdminMenu
+    {
+        public static void Work(DataBase dataBase)
+        {
+            string inputData = string.Empty;
+
+            while (inputData != "6")
+            {
+                Console.WriteLine(
+                    "1. Добавить игрока\n" +
+                    "2. Забанить игрока\n" +
+                    "3. Разбанить игрока\n" +
+                    "4. Удалить игрока\n" +
+                    "5. Список игроков\n" +
+                    "6. Выйти\n");
+                inputData = Console.ReadLine();
+                Console.Clear();
+
+                switch (inputData)
+                {
+                    case "1":
+                        Console.Write("Введите никнейм: ");
+                        string playerNickname = Console.ReadLine();
+                        dataBase.AddPlayer(playerNickname);
+                        break;
+                    case "2":
+                    case "3":
+                    case "4":
+                        Console.Write("Введите id: ");
+                        int.TryParse(Console.ReadLine(), out int playerId);
+
+                        if (inputData == "2")
+                            dataBase.BanPlayer(playerId);
+                        else if (inputData == "3")
+                            dataBase.UnBanPlayer(playerId);
+                        else
+                            dataBase.RemovePlayer(playerId);
+
+                        Console.ReadLine();
+                        break;
+                    case "5":
+                        dataBase.PrintPlayersInfo();
+                        Console.ReadLine();
+                        break;
+                }
+                Console.Clear();
+            }
+        }
+    }
+
+    class Player
+    {
+        public readonly int Id;
+        private int _level = 0;
+        public bool IsBanned { get; set; } = false;
+        public string Nickname { get; private set; }
+
+        public Player(int id, string nickname)
+        {
+            Id = id;
+            Nickname = nickname;
+        }
+
+        public void GetInfo()
+        {
+            string status;
+
+            if (IsBanned)
+                status = "Забанен.";
+            else
+                status = "Бана нет.";
+
+            Console.WriteLine($"({Id}) {Nickname,15} [{_level} уровень] Статус: {status}");
+        }
+    }
+
+    class DataBase
+    {
+        private const int _minId = 1000;
+        private const int _maxId = 9999;
+        public readonly List<Player> players = new List<Player>();
+        Random random = new Random();
+
+        public void AddPlayer(string nickname)
+        {
+            int newPlayerId = GenerateUniqueId();
+            players.Add(new Player(newPlayerId, nickname));
+        }
+
+        public void BanPlayer(int playerId)
+        {
+            int playerIndex = GetPlayerIndex(playerId);
+
+            if (playerId < _minId)
+            {
+                Console.WriteLine("Игрок не найден.");
+            }
+            else if (IsBanned(playerId))
+            {
+                Console.WriteLine("Игрок уже был забанен.");
+            }
+            else
+            {
+                players[playerIndex].IsBanned = true;
+                Console.WriteLine("Игрок забанен.");
+            }
+        }
+
+        public void UnBanPlayer(int playerId)
+        {
+            int playerIndex = GetPlayerIndex(playerId);
+
+            if (playerId < _minId)
+            {
+                Console.WriteLine("Игрок не найден.");
+            }
+            else if (IsBanned(playerId) == false)
+            {
+                Console.WriteLine("Игрок не был забанен.");
+            }
+            else
+            {
+                players[playerIndex].IsBanned = false;
+                Console.WriteLine("Игрок разбанен.");
+            }
+        }
+
+        public void RemovePlayer(int playerId)
+        {
+            int playerIndex = GetPlayerIndex(playerId);
+
+            if (playerIndex < 0)
+            {
+                Console.WriteLine("Игрок не найден.");
+            }
+            else
+            {
+                players.RemoveAt(playerIndex);
+                Console.WriteLine("Игрок удалён.");
+            }
+        }
+
+        public void PrintPlayersInfo()
+        {
+            foreach (var player in players)
+                player.GetInfo();
+        }
+
+        private int GetPlayerIndex(int playerId)
+        {
+            for (int i = 0; i < players.Count; i++)
+                if (players[i].Id == playerId)
+                    return i;
+            return -1;
+        }
+
+        private bool IsBanned(int playerId)
+        {
+            int playerIndex = GetPlayerIndex(playerId);
+            return players[playerIndex].IsBanned;
+        }
+
+        private int GenerateUniqueId()
+        {
+            int newPlayerid;
+            bool isUniqueId;
+
+            do
+            {
+                isUniqueId = true;
+                newPlayerid = random.Next(_minId, _maxId + 1);
+
+                foreach (Player player in players)
+                {
+                    if (player.Id == newPlayerid)
+                    {
+                        isUniqueId = false;
+                        break;
+                    }
+                }
+            } while (!isUniqueId);
+
+            return newPlayerid;
+        }
+    }
+}
