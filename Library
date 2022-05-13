@@ -84,23 +84,23 @@ namespace Lessons
 
             private int GetReleaseYear()
             {
-                bool IsCorrectNumber = true;
+                bool isCorrectNumber = true;
                 int result;
 
                 do
                 {
-                    IsCorrectNumber = true;
+                    isCorrectNumber = true;
                     int.TryParse(Console.ReadLine(), out result);
 
                     if (result <= 0 || result > DateTime.Now.Year)
                     {
-                        IsCorrectNumber = false;
+                        isCorrectNumber = false;
                         Console.Write("Некорректные данные, попробуйте снова");
                         Console.ReadKey(true);
                         Console.Clear();
                         Console.Write("Год выпуска: ");
                     }
-                } while (!IsCorrectNumber);
+                } while (!isCorrectNumber);
 
                 return result;
             }
