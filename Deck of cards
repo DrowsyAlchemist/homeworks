@@ -14,6 +14,27 @@ namespace Lessons
         }
     }
 
+    enum CardName
+    {
+        Six = 6,
+        Seven,
+        Eight,
+        Nine,
+        Ten,
+        Jack,
+        Queen,
+        King,
+        Ace
+    }
+
+    enum Suit
+    {
+        Spades,
+        Hearts,
+        Clubs,
+        Diamonds
+    }
+
     class Game
     {
         private Player _player;
@@ -92,29 +113,9 @@ namespace Lessons
         private const int CardsOfSameSuit = CardsInDeck / SuitCount;
         private Stack<Card> _deck;
 
-
         public CardDeck()
         {
             _deck = GetFilledDeck();
-        }
-
-        private Stack<Card> GetFilledDeck()
-        {
-            Stack<Card> cards = new Stack<Card>(CardsInDeck);
-            Suit newCardSuit;
-            CardName newCardName;
-
-            for (int i = 0; i < SuitCount; i++)
-            {
-                newCardSuit = (Suit)i;
-
-                for (int j = 0; j < CardsOfSameSuit; j++)
-                {
-                    newCardName = (CardName)(j + (int)CardName.Six);
-                    cards.Push(new Card(newCardSuit, newCardName));
-                }
-            }
-            return cards;
         }
 
         public void Shuffle()
@@ -140,6 +141,11 @@ namespace Lessons
             _deck = tempDeckStack;
         }
 
+        public bool IsEmpty()
+        {
+            return _deck.Count <= 0;
+        }
+
         public Card Pick()
         {
             return _deck.Pop();
@@ -151,9 +157,23 @@ namespace Lessons
                 card.ShowInfo();
         }
 
-        public bool IsEmpty()
+        private Stack<Card> GetFilledDeck()
         {
-            return _deck.Count <= 0;
+            Stack<Card> cards = new Stack<Card>(CardsInDeck);
+            Suit newCardSuit;
+            CardName newCardName;
+
+            for (int i = 0; i < SuitCount; i++)
+            {
+                newCardSuit = (Suit)i;
+
+                for (int j = 0; j < CardsOfSameSuit; j++)
+                {
+                    newCardName = (CardName)(j + (int)CardName.Six);
+                    cards.Push(new Card(newCardSuit, newCardName));
+                }
+            }
+            return cards;
         }
     }
 
@@ -180,26 +200,5 @@ namespace Lessons
                 card.ShowInfo();
             }
         }
-    }
-
-    enum CardName
-    {
-        Six = 6,
-        Seven,
-        Eight,
-        Nine,
-        Ten,
-        Jack,
-        Queen,
-        King,
-        Ace
-    }
-
-    enum Suit
-    {
-        Spades,
-        Hearts,
-        Clubs,
-        Diamonds
     }
 }
