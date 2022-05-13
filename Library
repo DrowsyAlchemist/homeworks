@@ -1,0 +1,210 @@
+using System;
+using System.Collections.Generic;
+
+namespace Lessons
+{
+    class Lessons
+    {
+        public static void Main()
+        {
+            Library library = new Library();
+            library.Menu();
+        }
+
+        class Book
+        {
+            public string Name { get; private set; }
+            public string Autor { get; private set; }
+            public int ReleaseYear { get; private set; }
+
+            public Book(string name, string autor, int releaseYear)
+            {
+                Name = name;
+                Autor = autor;
+                ReleaseYear = releaseYear;
+            }
+
+            public void ShowInfo()
+            {
+                Console.WriteLine(
+                    $"{Name}\n" +
+                    $"Автор: {Autor}\n" +
+                    $"Год выпуска: {ReleaseYear}\n");
+            }
+        }
+
+        class Library
+        {
+            private List<Book> _books = new List<Book>();
+
+            public void Menu()
+            {
+                string inputData = string.Empty;
+
+                while (inputData != "5")
+                {
+                    Console.WriteLine(
+                        "1. Добавить книгу\n" +
+                        "2. Убрать книгу\n" +
+                        "3. Показать все книги\n" +
+                        "4. Найти книги\n" +
+                        "5. Выйти\n");
+                    inputData = Console.ReadLine();
+                    Console.Clear();
+
+                    switch (inputData)
+                    {
+                        case "1":
+                            AddBook();
+                            break;
+                        case "2":
+                            RemoveBook();
+                            break;
+                        case "3":
+                            PrintAllBooks();
+                            break;
+                        case "4":
+                            FindBooks();
+                            break;
+                    }
+                    Console.Clear();
+                }
+            }
+
+            private void AddBook()
+            {
+                Console.Write("Название книги: ");
+                string newBookName = Console.ReadLine();
+                Console.Write("Автор: ");
+                string newBoookAutor = Console.ReadLine();
+                Console.Write("Год выпуска: ");
+                int newBookReleaseYear = GetReleaseYear();
+                _books.Add(new Book(newBookName, newBoookAutor, newBookReleaseYear));
+            }
+
+            private int GetReleaseYear()
+            {
+                bool IsCorrectNumber = true;
+                int result;
+
+                do
+                {
+                    IsCorrectNumber = true;
+                    int.TryParse(Console.ReadLine(), out result);
+
+                    if (result <= 0 || result > DateTime.Now.Year)
+                    {
+                        IsCorrectNumber = false;
+                        Console.Write("Некорректные данные, попробуйте снова");
+                        Console.ReadKey(true);
+                        Console.Clear();
+                        Console.Write("Год выпуска: ");
+                    }
+                } while (!IsCorrectNumber);
+
+                return result;
+            }
+
+            private void RemoveBook()
+            {
+                Console.Write("Название книги, которую вы хотите удалить: ");
+                string removeBookName = Console.ReadLine();
+                Console.Write("Автор: ");
+                string removeBoookAutor = Console.ReadLine();
+
+                foreach (Book book in _books)
+                {
+                    if (book.Name == removeBookName
+                        && book.Autor == removeBoookAutor)
+                    {
+                        _books.Remove(book);
+                        Console.WriteLine("Книга удалена.");
+                        Console.ReadKey(true);
+                        return;
+                    }
+                }
+                Console.WriteLine("Книга не найдена.");
+                Console.ReadKey(true);
+            }
+
+            private void PrintAllBooks()
+            {
+                foreach (Book book in _books)
+                    book.ShowInfo();
+
+                Console.ReadKey(true);
+            }
+
+            private void FindBooks()
+            {
+                string inputData = string.Empty;
+                while (inputData != "4")
+                {
+                    Console.WriteLine(
+                        "1. Найти по названию\n" +
+                        "2. Найти по автору\n" +
+                        "3. Найти по году выпуска\n" +
+                        "4. Отмена\n");
+                    inputData = Console.ReadLine();
+                    Console.Clear();
+
+                    switch (inputData)
+                    {
+                        case "1":
+                            FindBooksByName();
+                            break;
+                        case "2":
+                            FindBooksByAutor();
+                            break;
+                        case "3":
+                            FindBooksByReleaseYear();
+                            break;
+                    }
+                    Console.Clear();
+                }
+            }
+
+            private void FindBooksByName()
+            {
+                Console.WriteLine("Введите название книги: ");
+                string searchedBookName = Console.ReadLine();
+                Console.Clear();
+                Console.WriteLine("Найденные книги:\n");
+
+                foreach (Book book in _books)
+                    if (book.Name == searchedBookName)
+                        book.ShowInfo();
+
+                Console.ReadKey(true);
+            }
+
+            private void FindBooksByAutor()
+            {
+                Console.WriteLine("Введите автора: ");
+                string searchedBookAutor = Console.ReadLine();
+                Console.Clear();
+                Console.WriteLine("Найденные книги:\n");
+
+                foreach (Book book in _books)
+                    if (book.Autor == searchedBookAutor)
+                        book.ShowInfo();
+
+                Console.ReadKey(true);
+            }
+
+            private void FindBooksByReleaseYear()
+            {
+                Console.WriteLine("Введите год выпуска: ");
+                int.TryParse(Console.ReadLine(), out int searchedBookReleaseYear);
+                Console.Clear();
+                Console.WriteLine("Найденные книги:\n");
+
+                foreach (Book book in _books)
+                    if (book.ReleaseYear == searchedBookReleaseYear)
+                        book.ShowInfo();
+
+                Console.ReadKey(true);
+            }
+        }
+    }
+}
