@@ -8,30 +8,26 @@ namespace Lessons
         public static void Main()
         {
             Player player = new Player("Mark");
-            Merchant merchant = new Merchant("Merchant");
+            TravelingMerchant travelingMerchant = new TravelingMerchant("Merchant");
             Item apple = new Item("Яблоко", "Восстанавливает 10 здоровья", 5);
             Item bread = new Item("Хлеб", "Неплохо утоляет голод", 2);
             Item hammer = new Item("Молоток", "Можно забивать им гвозди или использовать в качестве оружия", 10);
             Item rustySward = new Item("Ржавый меч", "Ржавый и тупой, но это лучше, чем ничего", 15);
-            merchant.TakeItem(apple);
-            merchant.TakeItem(hammer);
-            merchant.TakeItem(bread);
+            travelingMerchant.TakeItem(hammer);
+            travelingMerchant.TakeItem(bread);
             player.TakeItem(apple);
             player.TakeItem(rustySward);
-            Trade trade = new Trade(player, merchant);
-            trade.Menu();
+            Trade trade = new Trade(player, travelingMerchant);
+            trade.Perform();
         }
     }
 
-    interface ITrader
+    abstract class Trader
     {
-        int WaresCount { get; }
-        int GiveMoney(int requiredMoney);
-        Item Sell(int wareNumber);
-        int GetPriсe(int wareNumber);
-        void ShowWares();
-        void TakeItem(Item item);
-        void PrintNotEnoughMoneyMessage();
+        public abstract void ShowInventory();
+        public abstract void ShowItems();
+        public abstract void BuyItemFromPlayer(Item item, Player player);
+        public abstract void SellItemToPlayer(int itemNumber, Player player);
     }
 
     static class Logger
@@ -48,15 +44,16 @@ namespace Lessons
     class Trade
     {
         private Player _player;
-        private Merchant _merchant;
+        private Trader _trader;
+        private int _tradeItemNumber;
 
-        public Trade(Player player, Merchant merchant)
+        public Trade(Player player, Trader trader)
         {
             _player = player;
-            _merchant = merchant;
+            _trader = trader;
         }
 
-        public void Menu()
+        public void Perform()
         {
             string inputData = string.Empty;
 
@@ -74,16 +71,16 @@ namespace Lessons
                 switch (inputData)
                 {
                     case "1":
-                        _merchant.ShowInventory();
+                        _trader.ShowInventory();
                         break;
                     case "2":
                         _player.ShowInventory();
                         break;
                     case "3":
-                        Buy();
+                        SellItemToPlayer();
                         break;
                     case "4":
-                        Sell();
+                        BuyItemFromPlayer();
                         break;
                 }
                 Console.ReadKey(true);
@@ -91,68 +88,50 @@ namespace Lessons
             }
         }
 
-        private void Buy()
+        private void SellItemToPlayer()
         {
-            _merchant.ShowWares();
+            _trader.ShowItems();
             Console.Write("Выберите предмет для покупки: ");
-            MakeTradeBetweenSellerAndBuyer(_merchant, _player);
+            _tradeItemNumber = GetItemNumber();
+            _trader.SellItemToPlayer(_tradeItemNumber, _player);
         }
 
-        private void Sell()
+        private void BuyItemFromPlayer()
         {
-            _player.ShowWares();
+            _player.ShowItems();
             Console.Write("Выберите предмет для продажи: ");
-            MakeTradeBetweenSellerAndBuyer(_player, _merchant);
-        }
-
-        private void MakeTradeBetweenSellerAndBuyer(ITrader seller, ITrader buyer)
-        {
-            int wareNumber = GetWareNumber();
-
-            if (IsCorrectWareNumber(seller, wareNumber))
+            _tradeItemNumber = GetItemNumber();
+            if (IsInvalidItemNumber(_tradeItemNumber, _player))
             {
-                int warePrice = seller.GetPriсe(wareNumber);
-                int tradeMoney = buyer.GiveMoney(warePrice);
-
-                if (tradeMoney == warePrice)
-                {
-                    Item tradeWare = seller.Sell(wareNumber);
-                    buyer.TakeItem(tradeWare);
-                }
-                else
-                {
-                    buyer.PrintNotEnoughMoneyMessage();
-                }
+                Logger.PrintMessage("\nПредмет не найден.", ConsoleColor.Red);
             }
             else
             {
-                Logger.PrintMessage("Предмет не найден.", ConsoleColor.Red);
+                Item tradeItem = _player.DropItem(_tradeItemNumber);
+                _trader.BuyItemFromPlayer(tradeItem, _player);
             }
         }
 
-        private int GetWareNumber()
+        private int GetItemNumber()
         {
-            int.TryParse(Console.ReadLine(), out int wareNumber);
-            return wareNumber;
+            int.TryParse(Console.ReadLine(), out int itemNumber);
+            return itemNumber;
         }
 
-        private bool IsCorrectWareNumber(ITrader seller, int wareNumber)
+        private bool IsInvalidItemNumber(int itemNumber, Player player)
         {
-            return (wareNumber > 0) && (wareNumber <= seller.WaresCount);
+            return (itemNumber <= 0) || (itemNumber > player.ItemsCount);
         }
     }
 
-    class Player : ITrader
+    class Player
     {
         private const int InitialMoney = 15;
         private List<Item> _inventory = new List<Item>();
         private int _money;
 
         public string Name { get; private set; }
-        public int WaresCount
-        {
-            get { return _inventory.Count; }
-        }
+        public int ItemsCount => _inventory.Count;
 
         public Player(string name)
         {
@@ -169,41 +148,14 @@ namespace Lessons
             _money = money;
         }
 
-        public int GiveMoney(int requiredMoney)
-        {
-            if (requiredMoney < 0)
-                throw new ArgumentException();
-
-            if (EnoughMoney(requiredMoney))
-            {
-                _money -= requiredMoney;
-                return requiredMoney;
-            }
-            return 0;
-        }
-
-        public int GetPriсe(int itemNumber)
-        {
-            return _inventory[itemNumber - 1].Cost;
-        }
-
-        public Item Sell(int itemNumber)
-        {
-            _money += GetPriсe(itemNumber);
-            Item wareToSell = _inventory[itemNumber - 1];
-            Logger.PrintMessage($"\nВы продали {_inventory[itemNumber - 1].Name}", ConsoleColor.Green);
-            _inventory.RemoveAt(itemNumber - 1);
-            return wareToSell;
-        }
-
         public void ShowInventory()
         {
             Console.WriteLine("Ваш инвентарь:\n");
             Console.WriteLine($"Деньги: {_money}\n");
-            ShowWares();
+            ShowItems();
         }
 
-        public void ShowWares()
+        public void ShowItems()
         {
             for (int i = 0; i < _inventory.Count; i++)
             {
@@ -217,43 +169,59 @@ namespace Lessons
             _inventory.Add(item);
         }
 
-        public void PrintNotEnoughMoneyMessage()
+        public Item DropItem(int itemNumber)
         {
-            Logger.PrintMessage("\nНедостаточно денег для покупки.", ConsoleColor.Red);
+            Item itemToDrop = _inventory[itemNumber - 1];
+            _inventory.RemoveAt(itemNumber - 1);
+            return itemToDrop;
         }
 
-        private bool EnoughMoney(int requiredMoney)
+        public void TakeMoney(int money)
         {
-            return _money > requiredMoney;
+            if (money < 0)
+                throw new ArgumentException();
+
+            _money += money;
+        }
+
+        public bool TryGiveMoney(int requiredMoney)
+        {
+            if (requiredMoney < 0)
+                throw new ArgumentException();
+
+            if (NotEnoughMoney(requiredMoney))
+                return false;
+
+            _money -= requiredMoney;
+            return true;
+        }
+
+        private bool NotEnoughMoney(int requiredMoney)
+        {
+            return _money < requiredMoney;
         }
     }
 
-    class Merchant : ITrader
+    class TravelingMerchant : Trader
     {
         private const int MaxPercent = 100;
         private const int InitialProfitInPercent = 120;
         private const int InitialMoney = 30;
+        private List<Item> _itemsForSell = new List<Item>();
         private int _profitInPercent;
-        private List<Item> _wares = new List<Item>();
         private int _money;
 
         public string Name { get; private set; }
-        public int WaresCount
-        {
-            get
-            {
-                return _wares.Count;
-            }
-        }
+        public int ItemsCount => _itemsForSell.Count;
 
-        public Merchant(string name)
+        public TravelingMerchant(string name)
         {
             Name = name;
             _profitInPercent = InitialProfitInPercent;
             _money = InitialMoney;
         }
 
-        public Merchant(string name, int profitInPercent, int money)
+        public TravelingMerchant(string name, int profitInPercent, int money)
         {
             if (money < 0)
                 throw new ArgumentException();
@@ -266,64 +234,95 @@ namespace Lessons
             _money = money;
         }
 
-        public int GiveMoney(int requiredMoney)
+        public override void BuyItemFromPlayer(Item item, Player player)
+        {
+            if (TryGiveMoneyToPlayer(item.Cost, player) == false)
+            {
+                Logger.PrintMessage("\nУ торговца недостаточно денег.", ConsoleColor.Red);
+                player.TakeItem(item);
+                return;
+            }
+            TakeItem(item);
+            Logger.PrintMessage($"\nВы продали {item.Name} за {item.Cost} монет.", ConsoleColor.Green);
+        }
+
+        public void TakeItem(Item item)
+        {
+            _itemsForSell.Add(item);
+        }
+
+        public override void SellItemToPlayer(int itemNumber, Player player)
+        {
+            if (ItemIsNotFound(itemNumber))
+            {
+                Logger.PrintMessage("\nТовар не найден.", ConsoleColor.Red);
+                return;
+            }
+            int itemPrice = GetPriсe(itemNumber);
+
+
+            if (player.TryGiveMoney(itemPrice) == false)
+            {
+                Logger.PrintMessage("\nУ вас недостаточно денег для покупки.", ConsoleColor.Red);
+                return;
+            }
+            Item itemToSell = DropItem(itemNumber);
+            player.TakeItem(itemToSell);
+            _money += itemPrice;
+            Logger.PrintMessage($"\nВы купили {itemToSell.Name} за {itemPrice} монет.", ConsoleColor.Green);
+        }
+
+        public override void ShowInventory()
+        {
+            Console.WriteLine($"Деньги продавца: {_money}\n");
+            ShowItems();
+        }
+
+        public override void ShowItems()
+        {
+            Console.WriteLine("Товары продавца:\n");
+
+            for (int i = 0; i < _itemsForSell.Count; i++)
+            {
+                Console.Write($"{i + 1}. ");
+                Console.WriteLine($"{_itemsForSell[i].Name}: {_itemsForSell[i].Description}. Стоимость: {GetPriсe(i + 1)}\n");
+            }
+        }
+
+        private int GetPriсe(int itemNumber)
+        {
+            int itemPrice = (int)(_itemsForSell[itemNumber - 1].Cost * (double)_profitInPercent / MaxPercent);
+            return itemPrice + 1;
+        }
+
+        private Item DropItem(int itemNumber)
+        {
+            Item itemToDrop = _itemsForSell[itemNumber - 1];
+            _itemsForSell.RemoveAt(itemNumber - 1);
+            return itemToDrop;
+        }
+
+        private bool ItemIsNotFound(int itemNumber)
+        {
+            return (itemNumber <= 0) || (itemNumber > _itemsForSell.Count);
+        }
+
+        private bool TryGiveMoneyToPlayer(int requiredMoney, Player player)
         {
             if (requiredMoney < 0)
                 throw new ArgumentException();
 
-            if (EnoughMoney(requiredMoney))
-            {
-                _money -= requiredMoney;
-                return requiredMoney;
-            }
-            return 0;
+            if (NotEnoughMoney(requiredMoney))
+                return false;
+
+            _money -= requiredMoney;
+            player.TakeMoney(requiredMoney);
+            return true;
         }
 
-        public Item Sell(int itemNumber)
+        private bool NotEnoughMoney(int requiredMoney)
         {
-            _money += GetPriсe(itemNumber);
-            Item wareToSell = _wares[itemNumber - 1];
-            Logger.PrintMessage($"\nВы купили {wareToSell.Name}", ConsoleColor.Green);
-            _wares.RemoveAt(itemNumber - 1);
-            return wareToSell;
-        }
-
-        public int GetPriсe(int wareNumber)
-        {
-            int warePrice = (int)(_wares[wareNumber - 1].Cost * (double)_profitInPercent / MaxPercent);
-            return warePrice + 1;
-        }
-
-        public void ShowWares()
-        {
-            Console.WriteLine("Товары продавца:\n");
-
-            for (int i = 0; i < _wares.Count; i++)
-            {
-                Console.Write($"{i + 1}. ");
-                Console.WriteLine($"{_wares[i].Name}: {_wares[i].Description}. Стоимость: {GetPriсe(i + 1)}\n");
-            }
-        }
-
-        public void ShowInventory()
-        {
-            Console.WriteLine($"Деньги продавца: {_money}\n");
-            ShowWares();
-        }
-
-        public void TakeItem(Item ware)
-        {
-            _wares.Add(ware);
-        }
-
-        public void PrintNotEnoughMoneyMessage()
-        {
-            Logger.PrintMessage("\nУ продавца недостаточно денег.", ConsoleColor.Red);
-        }
-
-        private bool EnoughMoney(int itemCost)
-        {
-            return _money > itemCost;
+            return _money < requiredMoney;
         }
     }
 
