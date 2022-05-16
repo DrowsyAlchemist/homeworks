@@ -22,86 +22,6 @@ namespace Lessons
         }
     }
 
-    class Character
-    {
-        protected const int InitialMoney = 15;
-        protected List<Item> Inventory = new List<Item>();
-        protected int Money;
-
-        public string Name { get; protected set; }
-        public int ItemsCount => Inventory.Count;
-
-        public void ShowInventory()
-        {
-            Console.WriteLine($"Деньги: {Money}\n");
-            ShowItems();
-        }
-
-        public virtual void ShowItems()
-        {
-            Console.WriteLine("Предметы: \n");
-
-            for (int i = 0; i < Inventory.Count; i++)
-            {
-                Console.Write($"{i + 1}. ");
-                Inventory[i].ShowInfo();
-            }
-        }
-
-        public void TakeItem(Item item)
-        {
-            Inventory.Add(item);
-        }
-
-        public Item DropItem(int itemNumber)
-        {
-            Item itemToDrop = Inventory[itemNumber - 1];
-            Inventory.RemoveAt(itemNumber - 1);
-            return itemToDrop;
-        }
-
-        public void TakeMoney(int money)
-        {
-            if (money < 0)
-                throw new ArgumentException();
-
-            Money += money;
-        }
-
-        public bool TryGiveMoneyToCharacter(int requiredMoney, Character character)
-        {
-            if (requiredMoney < 0)
-                throw new ArgumentException();
-
-            if (NotEnoughMoney(requiredMoney))
-                return false;
-
-            Money -= requiredMoney;
-            character.TakeMoney(requiredMoney);
-            return true;
-        }
-
-        protected bool NotEnoughMoney(int requiredMoney)
-        {
-            return Money < requiredMoney;
-        }
-    }
-
-    abstract class Trader : Character
-    {
-        protected const int MaxPercent = 100;
-        protected const int InitialProfitInPercent = 120;
-        protected int ProfitInPercent;
-
-        public abstract void BuyItemFromPlayer(Item item, Player player);
-        public abstract void SellItemToPlayer(int itemNumber, Player player);
-        protected virtual int GetPriсe(int itemNumber) 
-        {
-            int itemPrice = (int)(Inventory[itemNumber - 1].Cost * (double)ProfitInPercent / MaxPercent);
-            return itemPrice + 1;
-        }
-    }
-
     static class Logger
     {
         public static void PrintMessage(string message, ConsoleColor color)
@@ -193,6 +113,86 @@ namespace Lessons
         private bool IsInvalidItemNumber(int itemNumber, Player player)
         {
             return (itemNumber <= 0) || (itemNumber > player.ItemsCount);
+        }
+    }
+
+    abstract class Character
+    {
+        protected const int InitialMoney = 15;
+        protected List<Item> Inventory = new List<Item>();
+        protected int Money;
+
+        public string Name { get; protected set; }
+        public int ItemsCount => Inventory.Count;
+
+        public void ShowInventory()
+        {
+            Console.WriteLine($"Деньги: {Money}\n");
+            ShowItems();
+        }
+
+        public virtual void ShowItems()
+        {
+            Console.WriteLine("Предметы: \n");
+
+            for (int i = 0; i < Inventory.Count; i++)
+            {
+                Console.Write($"{i + 1}. ");
+                Inventory[i].ShowInfo();
+            }
+        }
+
+        public void TakeItem(Item item)
+        {
+            Inventory.Add(item);
+        }
+
+        public Item DropItem(int itemNumber)
+        {
+            Item itemToDrop = Inventory[itemNumber - 1];
+            Inventory.RemoveAt(itemNumber - 1);
+            return itemToDrop;
+        }
+
+        public void TakeMoney(int money)
+        {
+            if (money < 0)
+                throw new ArgumentException();
+
+            Money += money;
+        }
+
+        public bool TryGiveMoneyToCharacter(int requiredMoney, Character character)
+        {
+            if (requiredMoney < 0)
+                throw new ArgumentException();
+
+            if (NotEnoughMoney(requiredMoney))
+                return false;
+
+            Money -= requiredMoney;
+            character.TakeMoney(requiredMoney);
+            return true;
+        }
+
+        protected bool NotEnoughMoney(int requiredMoney)
+        {
+            return Money < requiredMoney;
+        }
+    }
+
+    abstract class Trader : Character
+    {
+        protected const int MaxPercent = 100;
+        protected const int InitialProfitInPercent = 120;
+        protected int ProfitInPercent;
+
+        public abstract void BuyItemFromPlayer(Item item, Player player);
+        public abstract void SellItemToPlayer(int itemNumber, Player player);
+        protected virtual int GetPriсe(int itemNumber)
+        {
+            int itemPrice = (int)(Inventory[itemNumber - 1].Cost * (double)ProfitInPercent / MaxPercent);
+            return itemPrice + 1;
         }
     }
 
