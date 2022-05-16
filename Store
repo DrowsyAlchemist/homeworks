@@ -201,6 +201,7 @@ namespace Lessons
         public Player(string name)
         {
             Name = name;
+            Money = InitialMoney;
         }
 
         public Player(string name, int money)
