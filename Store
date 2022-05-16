@@ -265,7 +265,6 @@ namespace Lessons
             }
             Item itemToSell = DropItem(itemNumber);
             player.TakeItem(itemToSell);
-            Money += itemPrice;
             Logger.PrintMessage($"\nВы купили {itemToSell.Name} за {itemPrice} монет.", ConsoleColor.Green);
         }
 
