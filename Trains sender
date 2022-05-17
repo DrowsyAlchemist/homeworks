@@ -1,0 +1,158 @@
+using System;
+using System.Collections.Generic;
+
+namespace Lessons
+{
+    class Lessons
+    {
+        public static void Main()
+        {
+            TrainsSender trainsSender = new TrainsSender();
+            string inputData = string.Empty;
+
+            while (inputData != "2")
+            {
+                trainsSender.PrintAllTrains();
+                Console.WriteLine("1. Создать новый рейс\n2. Выйти\n");
+                inputData = Console.ReadLine();
+
+                if (inputData == "1")
+                {
+                    Console.Clear();
+                    trainsSender.CreateTrain();
+                }
+            }
+        }
+    }
+
+    static class Logger
+    {
+        public static void PrintMessage(string message)
+        {
+            ConsoleColor defaultColor = Console.ForegroundColor;
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine(message);
+            Console.ForegroundColor = defaultColor;
+        }
+    }
+
+    static class CarrierCompany
+    {
+        private const int MinPassengersCountPerTrain = 100;
+        private const int MaxPassengersCountPerTrain = 1000;
+        private static Random _random = new Random();
+
+        public static int GetSoldTicketsCount()
+        {
+            int soldTicketsCount = _random.Next(MinPassengersCountPerTrain, MaxPassengersCountPerTrain);
+            Logger.PrintMessage($"Продано {soldTicketsCount} билетов.\n");
+            Console.ReadKey(true);
+            return soldTicketsCount;
+        }
+    }
+
+    class TrainsSender
+    {
+        private List<Train> _sentTrains = new List<Train>();
+
+        public void CreateTrain()
+        {
+            Console.WriteLine("Шаг 1: Создание направления поезда.\n");
+            Console.Write("Введите отправной пункт: ");
+            string startingPoint = Console.ReadLine();
+            Console.Write("Введите конечный пункт: ");
+            string destinationPoint = Console.ReadLine();
+            Console.Clear();
+            Console.WriteLine("Шаг 2: Продажа билетов \n");
+            int passengersCount = CarrierCompany.GetSoldTicketsCount();
+            Console.Clear();
+            Console.WriteLine("Шаг 3: Сформировать поезд \n");
+            Train newTrain = new Train(startingPoint, destinationPoint);
+            newTrain.CreateTrainCars(passengersCount);
+            Console.Clear();
+            Console.WriteLine("Шаг 4: Отправить поезд \n");
+            _sentTrains.Add(newTrain);
+            Logger.PrintMessage("Рейс отправлен!");
+            Console.ReadKey(true);
+        }
+
+        public void PrintAllTrains()
+        {
+            Console.Clear();
+
+            if (_sentTrains.Count == 0)
+            {
+                Console.WriteLine("Нет текущих рейсов.\n");
+            }
+            else
+            {
+                Console.WriteLine("Текущие рейсы:\n");
+
+                foreach (Train train in _sentTrains)
+                    train.ShowInfo();
+            }
+        }
+
+        class Train
+        {
+            private string _startingPoint;
+            private string _destinationPoint;
+            private List<TrainCar> _trainCars = new List<TrainCar>();
+
+            public int CarsCount => _trainCars.Count;
+            public int PassengersCount { get; private set; }
+
+            public Train(string startingPoint, string destinationPoint)
+            {
+                _startingPoint = startingPoint;
+                _destinationPoint = destinationPoint;
+            }
+
+            public void ShowInfo()
+            {
+                Console.WriteLine($"Направление: {_startingPoint} - {_destinationPoint}\n" +
+                    $"Количество пассажиров: {PassengersCount}\n" +
+                    $"Количество вагонов: {CarsCount}\n");
+            }
+
+            public void CreateTrainCars(int passengersCount)
+            {
+                PassengersCount = passengersCount;
+                Random random = new Random();
+
+                while (NotEnoughSeats(PassengersCount))
+                    _trainCars.Add(new TrainCar(random));
+
+                Logger.PrintMessage($"Добавлено {_trainCars.Count} вагонов:\n"); ;
+
+                for (int i = 0; i < _trainCars.Count; i++)
+                    Console.WriteLine($"Вагон {i + 1:D2}: {_trainCars[i].Capacity} мест.");
+
+                Console.ReadKey(true);
+            }
+
+            private bool NotEnoughSeats(int passengersCount)
+            {
+                int currentSeatsCount = 0;
+
+                foreach (var car in _trainCars)
+                    currentSeatsCount += car.Capacity;
+
+                return currentSeatsCount < passengersCount;
+            }
+        }
+
+        class TrainCar
+        {
+            private const int MinCapacity = 20;
+            private const int MaxCapacity = 60;
+
+            public int Capacity { get; private set; }
+
+            public TrainCar(Random random)
+            {
+                Capacity = random.Next(MinCapacity, MaxCapacity);
+            }
+        }
+    }
+}
