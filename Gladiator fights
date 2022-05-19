@@ -7,18 +7,14 @@ namespace Lessons
     {
         public static void Main()
         {
-            Console.SetWindowSize(120, 50);
-            Console.Clear();
-            Swordsman swordsman1 = new Swordsman("Мечник_1");
-            System.Threading.Thread.Sleep(100);
-            Swordsman swordsman2 = new Swordsman("Мечник_2");
-            Battle battle = new Battle(swordsman1, swordsman2);
-            battle.Conduct();
+            Game game = new Game();
+            game.ConductBalanceTest();
         }
     }
 
     class Logger
     {
+        private bool _testMode = false;
         public ConsoleColor Color { get; set; }
 
         public Logger(ConsoleColor color)
@@ -26,12 +22,109 @@ namespace Lessons
             Color = color;
         }
 
+        public Logger(bool isTestMode)
+        {
+            Color = ConsoleColor.White;
+            _testMode = isTestMode;
+        }
+
         public void PrintMessage(string message)
         {
+            if (_testMode)
+                return;
+
             ConsoleColor defaultColor = Console.ForegroundColor;
             Console.ForegroundColor = Color;
             Console.Write(message);
             Console.ForegroundColor = defaultColor;
+        }
+    }
+
+    class Game
+    {
+        private const int ConsoleWidth = 120;
+        private const int ConsoleHeight = 50;
+        private Gladiator[] _gladiators =
+               {new Swordsman(),
+                new Spearman(),
+                new Berserk(),
+                new Wizard(),
+                new Assassin()};
+        private Gladiator _firstGladiator;
+        private Gladiator _secondGladiator;
+
+        public void StartNewGame()
+        {
+            Console.SetWindowSize(ConsoleWidth, ConsoleHeight);
+            ChooseOpponents();
+            Battle battle = new Battle(_firstGladiator, _secondGladiator);
+            battle.Conduct();
+        }
+
+        public void ConductBalanceTest()
+        {
+            Console.SetWindowSize(ConsoleWidth, ConsoleHeight);
+            ChooseOpponents();
+            Console.WriteLine("Укажите количество боёв. Рекомендуется 5000000.");
+            int.TryParse(Console.ReadLine(), out int battlesCounter);
+            Console.WriteLine("Выполняется тест. Это может занять несколько минут.");
+            int fisrstWarriorWinsCounter = 0;
+
+            for (int i = 0; i < battlesCounter; i++)
+            {
+                Battle battle = new Battle(_firstGladiator.Clone(), _secondGladiator.Clone(), isTestMode: true);
+                fisrstWarriorWinsCounter += battle.TestConduct();
+            }
+            float fisrstWarriorWinsPercent = ((float)fisrstWarriorWinsCounter / (float)battlesCounter) * 100f;
+            Console.WriteLine($"Первый боец побеждал в {fisrstWarriorWinsPercent}% битв.");
+            Console.ReadKey(true);
+        }
+
+        private void ChooseOpponents()
+        {
+            Console.WriteLine("Выберите первого бойца:\n");
+            ChooseGladiator(ref _firstGladiator);
+            Console.WriteLine("Выберите второго бойца:\n");
+            ChooseGladiator(ref _secondGladiator);
+
+            if (_firstGladiator.Equals(_secondGladiator))
+                _secondGladiator = _firstGladiator.Clone();
+        }
+
+        private void ChooseGladiator(ref Gladiator gladiator)
+        {
+            int gladiatorNumber = 0;
+
+            while (gladiatorNumber <= 0 || gladiatorNumber > _gladiators.Length)
+            {
+                ShowAllGlagiators();
+                gladiatorNumber = GetGladiatorNumber();
+                Console.Clear();
+            }
+            gladiator = _gladiators[gladiatorNumber - 1];
+        }
+
+        private int GetGladiatorNumber()
+        {
+            bool isCorrectGladiatorNumber = false;
+            int gladiatorNumber = 0;
+
+            while (!isCorrectGladiatorNumber)
+            {
+                Console.Write(" Боец: ");
+                isCorrectGladiatorNumber = int.TryParse(Console.ReadLine(), out gladiatorNumber);
+                Console.WriteLine();
+            }
+            return gladiatorNumber;
+        }
+
+        private void ShowAllGlagiators()
+        {
+            for (int i = 0; i < _gladiators.Length; i++)
+            {
+                Console.Write($" {i + 1}. ");
+                _gladiators[i].ShowInfo();
+            }
         }
     }
 
@@ -44,19 +137,33 @@ namespace Lessons
         private Gladiator _firstGladiator;
         private Gladiator _secondGladiator;
         private int _cursorTopPosition = CursorStartTopPosition;
+        private Random _random = new Random();
+        private Logger _logger = new Logger(ConsoleColor.Green);
 
-        public Battle(Gladiator firstGladiator, Gladiator secondGladiator)
+        public Battle(Gladiator firstGladiator, Gladiator secondGladiator, bool isTestMode = false)
         {
             _firstGladiator = firstGladiator;
-            _firstGladiator.Logger = new Logger(FirstGladiatorColor);
+            _firstGladiator.Random = _random;
             _secondGladiator = secondGladiator;
-            _secondGladiator.Logger = new Logger(SecondGladiatorColor);
+            _secondGladiator.Random = _random;
+
+            if (isTestMode)
+            {
+                _firstGladiator.Logger = new Logger(isTestMode: true);
+                _secondGladiator.Logger = new Logger(isTestMode: true);
+            }
+            else
+            {
+                _firstGladiator.Logger = new Logger(FirstGladiatorColor);
+                _secondGladiator.Logger = new Logger(SecondGladiatorColor);
+            }
         }
 
         public void Conduct()
         {
             PrintGladiatorsHealthBars();
             Console.ReadKey(true);
+
             while (_firstGladiator.CurrentHealth > 0
                 && _secondGladiator.CurrentHealth > 0)
             {
@@ -74,11 +181,21 @@ namespace Lessons
             ShowBattleResults();
         }
 
+        public int TestConduct()
+        {
+            while (_firstGladiator.CurrentHealth > 0
+                && _secondGladiator.CurrentHealth > 0)
+            {
+                _firstGladiator.HitTheOpponent(_secondGladiator);
+                _secondGladiator.HitTheOpponent(_firstGladiator);
+            }
+            return (_firstGladiator.CurrentHealth > 0) ? 1 : 0;
+        }
+
         private void ShowBattleResults()
         {
-            Console.ForegroundColor = ConsoleColor.Green;
             Gladiator winner = (_firstGladiator.CurrentHealth > 0) ? _firstGladiator : _secondGladiator;
-            Console.Write("\nБой окончен!\n\nПобедитель: ");
+            _logger.PrintMessage("\nБой окончен!\n\nПобедитель: ");
             winner.Logger.PrintMessage(winner.Name);
             Console.ReadKey(true);
         }
@@ -95,23 +212,64 @@ namespace Lessons
     abstract class Gladiator
     {
         protected const int MaxPercent = 100;
-        protected const int MaxDamageInPercents = 130;
-        protected const int MinDamageInPercents = 70;
-        protected Random Random = new Random();
+        protected const int MaxDamageInPercents = 140;
+        protected const int MinDamageInPercents = 60;
         protected string Weapon;
-        protected float MaxHealth = 100f;
-        protected float ArmorInPercents = 50f;
-        protected float Strength = 25f;
+        protected string WeaponInInstrumentalCase;
         protected string SpecialAbility;
+        protected float MaxHealth = 250f;
+        protected float ArmorInPercents = 30f;
+        protected float Strength = 30f;
+        protected float OutputDamage;
 
-        public Logger Logger { get; set; }
         public string Name { get; protected set; }
         public float CurrentHealth { get; protected set; }
+        public Random Random { protected get; set; } = new Random();
+        public Logger Logger { get; set; } = new Logger(ConsoleColor.White);
 
-        public abstract void HitTheOpponent(Gladiator opponent);
-        public abstract void TakeAHit(float damage);
+        public Gladiator Clone()
+        {
+            switch (this)
+            {
+                case Swordsman swordsman:
+                    return new Swordsman();
+                case Spearman spearman:
+                    return new Spearman();
+                case Berserk berserk:
+                    return new Berserk();
+                case Wizard wizard:
+                    return new Wizard();
+                case Assassin assassin:
+                    return new Assassin();
+                default:
+                    throw new Exception();
+            }
+        }
 
-        public virtual void ShowInfo()
+        public virtual void HitTheOpponent(Gladiator opponent)
+        {
+            if (CurrentHealth <= 0)
+            {
+                Logger.PrintMessage($"{Name} больше не может сражаться.\n");
+                return;
+            }
+            Logger.PrintMessage($"{Name} нанёс удар {WeaponInInstrumentalCase}. ");
+            OutputDamage = GetRandomDamage();
+            opponent.TakeAHit(OutputDamage);
+        }
+
+        public virtual float TakeAHit(float inputDamage)
+        {
+            if (ArmorInPercents > 100)
+                throw new ArgumentException();
+
+            float resultDamage = inputDamage * (1 - (ArmorInPercents / MaxPercent));
+            CurrentHealth -= resultDamage;
+            Logger.PrintMessage($"{Name} получил {resultDamage:0.0} урона.\n");
+            return resultDamage;
+        }
+
+        public void ShowInfo()
         {
             Console.WriteLine(
                 $" {Name}\n" +
@@ -137,175 +295,211 @@ namespace Lessons
                 relativeHealth++;
 
             ConsoleColor defaultBackgroundColor = Console.BackgroundColor;
-            ConsoleColor defaultForegroundColor = Console.ForegroundColor;
             Console.Write("[");
             Console.BackgroundColor = Logger.Color;
-            Console.ForegroundColor = Logger.Color;
 
             for (int i = 0; i < relativeHealth; i++)
-                Console.Write("_");
+                Logger.PrintMessage("_");
 
             Console.BackgroundColor = ConsoleColor.White;
-            Console.ForegroundColor = ConsoleColor.White;
 
             for (int i = relativeHealth; i < scalingFactor; i++)
                 Console.Write("_");
 
             Console.BackgroundColor = defaultBackgroundColor;
-            Console.ForegroundColor = defaultForegroundColor;
             Console.WriteLine("]\n");
+        }
+
+        protected float GetRandomDamage()
+        {
+            float damageScaleFactor = (float)Random.Next(MinDamageInPercents, MaxDamageInPercents) / MaxPercent;
+            return Strength * damageScaleFactor;
         }
     }
 
     class Swordsman : Gladiator
     {
-        private const int secondBlowProbability = 30;
+        private const float secondHitProbability = 20;
 
         public Swordsman()
         {
             Name = "Мечник";
             Weapon = "Одноручный меч";
+            WeaponInInstrumentalCase = "мечом";
             CurrentHealth = MaxHealth;
-            SpecialAbility = $"{secondBlowProbability}% вероятность нанести второй удар.";
-        }
-
-        public Swordsman(string name) : this()
-        {
-            Name = name;
+            SpecialAbility = $"{secondHitProbability}% вероятность нанести второй удар.";
         }
 
         public override void HitTheOpponent(Gladiator opponent)
         {
-            if (CurrentHealth <= 0)
-            {
-                Logger.PrintMessage($"{Name} больше не может сражаться.\n");
-                return;
-            }
-            float outputDamage = GetRandomDamage();
-            Logger.PrintMessage($"{Name} ударил противника мечом. ");
-            opponent.TakeAHit(outputDamage);
+            base.HitTheOpponent(opponent);
 
-            if (Random.Next(0, MaxPercent) < secondBlowProbability)
+            if (CurrentHealth > 0)
+                HitSecondTime(opponent);
+        }
+
+        private void HitSecondTime(Gladiator opponent)
+        {
+            if ((Random.Next(0, MaxPercent) < secondHitProbability))
             {
                 Logger.PrintMessage($"{Name} ударил второй раз. ");
-                outputDamage = GetRandomDamage();
-                opponent.TakeAHit(outputDamage);
+                OutputDamage = GetRandomDamage();
+                opponent.TakeAHit(OutputDamage);
             }
-            else
-            {
-                Logger.PrintMessage("Ударить второй раз не удалось.\n");
-            }
-        }
-
-        private float GetRandomDamage()
-        {
-            float damageScaleFactor = (float)Random.Next(MinDamageInPercents, MaxDamageInPercents) / MaxPercent;
-            return Strength * damageScaleFactor;
-        }
-
-        public override void TakeAHit(float inputDamage)
-        {
-            float resultDamage = inputDamage * (1 - (ArmorInPercents / MaxPercent));
-            CurrentHealth -= resultDamage;
-            Logger.PrintMessage($"{Name} получил {resultDamage:0.0} урона.\n");
         }
     }
 
     class Wizard : Gladiator
     {
-        private const float MaxMana = 100;
-        private float _mana;
+        private const float DamagePercentСonvertedToHealth = 80;
+        private const int TurnsAbilityActivated = 3;
+        private int _currentTurn = 1;
+
         public Wizard()
         {
             Name = "Колдун";
             Weapon = "Магия";
             MaxHealth *= 0.7f;
             CurrentHealth = MaxHealth;
-            ArmorInPercents *= 0.5f;
-            Strength *= 1.5f;
-            SpecialAbility = "20% нанесённого врагу урона переходят в очки здоровья.";
+            ArmorInPercents *= 0.4f;
+            Strength *= 1.65f;
+            SpecialAbility = $"Каждые {TurnsAbilityActivated} хода " +
+                $"{DamagePercentСonvertedToHealth}% нанесённого врагу урона переходят в очки здоровья.";
         }
 
         public override void HitTheOpponent(Gladiator opponent)
         {
-            throw new NotImplementedException();
+            if (CurrentHealth > 0 && (_currentTurn % TurnsAbilityActivated == 0))
+            {
+                Logger.PrintMessage($"{Name} нанёс удар {WeaponInInstrumentalCase}. ");
+                OutputDamage = GetRandomDamage();
+                float enemyReceivedDamage = opponent.TakeAHit(OutputDamage);
+                ConvertDamageToHealth(enemyReceivedDamage);
+            }
+            else
+            {
+                base.HitTheOpponent(opponent);
+            }
+            _currentTurn++;
         }
 
-        public override void TakeAHit(float damage)
+        private void ConvertDamageToHealth(float opponentReceivedDamage)
         {
-            throw new NotImplementedException();
+            float restoredHealth = opponentReceivedDamage * DamagePercentСonvertedToHealth / MaxPercent;
+            CurrentHealth += restoredHealth;
+            Logger.PrintMessage($"{Name} восстановил {restoredHealth: 0.0} здоровья.\n");
         }
     }
 
-    class Вerserk : Gladiator
+    class Berserk : Gladiator
     {
-        private int _damageIncreaseFactor = 2;
-        public Вerserk()
+        private const float DamageIncreaseFactor = 2;
+        private const float IncreaseDamageProbability = 15;
+
+        public Berserk()
         {
             Name = "Берсерк";
             Weapon = "Двуручный топор";
-            MaxHealth *= 1.5f;
+            WeaponInInstrumentalCase = "топором";
+            MaxHealth *= 1.1f;
             CurrentHealth = MaxHealth;
-            ArmorInPercents *= 0.2f;
-            Strength *= 1.7f;
-            SpecialAbility = "Каждый 3-й удар наносит двойной урон.";
+            ArmorInPercents *= 0f;
+            Strength *= 1.4f;
+            SpecialAbility = $"{IncreaseDamageProbability}% шанс нанести {DamageIncreaseFactor}-кратный урон.";
         }
 
         public override void HitTheOpponent(Gladiator opponent)
         {
-            throw new NotImplementedException();
+            if (CurrentHealth > 0 && (Random.Next(0, MaxPercent) < IncreaseDamageProbability))
+                DoIncreasedDamage(opponent);
+            else
+                base.HitTheOpponent(opponent);
         }
 
-        public override void TakeAHit(float damage)
+        private void DoIncreasedDamage(Gladiator opponent)
         {
-            throw new NotImplementedException();
+            Logger.PrintMessage($"{Name} нанёс усиленный удар {WeaponInInstrumentalCase}. ");
+            OutputDamage = DamageIncreaseFactor * GetRandomDamage();
+            opponent.TakeAHit(OutputDamage);
         }
     }
 
     class Spearman : Gladiator
     {
+        private const float DodgingProbability = 10;
+        private const float DamageIncreaseFactor = 2;
+        private const float IncreaseDamageProbability = 10;
+
         public Spearman()
         {
             Name = "Копейщик";
             Weapon = "Копьё";
+            WeaponInInstrumentalCase = "копьём";
             CurrentHealth = MaxHealth;
-            ArmorInPercents *= 0.9f;
-            Strength *= 1.2f;
-            SpecialAbility = "25% вероятность увернуться от удара.";
+            ArmorInPercents *= 0.6f;
+            Strength *= 1.15f;
+            SpecialAbility = $"{DodgingProbability}% вероятность увернуться от удара. " +
+                $"{IncreaseDamageProbability}% шанс нанести {DamageIncreaseFactor}-кратный урон.";
         }
 
         public override void HitTheOpponent(Gladiator opponent)
         {
-            throw new NotImplementedException();
+            if (CurrentHealth > 0 && (Random.Next(0, MaxPercent) < IncreaseDamageProbability))
+                DoIncreasedDamage(opponent);
+            else
+                base.HitTheOpponent(opponent);
         }
 
-        public override void TakeAHit(float damage)
+        public override float TakeAHit(float damage)
         {
-            throw new NotImplementedException();
+            if (Random.Next(0, MaxPercent) < DodgingProbability)
+                return DodgeTheHit();
+            else
+                return base.TakeAHit(damage);
+        }
+
+        private void DoIncreasedDamage(Gladiator opponent)
+        {
+            Logger.PrintMessage($"{Name} нанёс усиленный удар {WeaponInInstrumentalCase}. ");
+            OutputDamage = DamageIncreaseFactor * GetRandomDamage();
+            opponent.TakeAHit(OutputDamage);
+        }
+
+        private float DodgeTheHit()
+        {
+            Logger.PrintMessage($"{Name} увернулся от удара.\n");
+            return 0;
         }
     }
 
     class Assassin : Gladiator
     {
+        private const float DodgingProbability = 50f;
+
         public Assassin()
         {
             Name = "Ассасин";
             Weapon = "Кинжал";
-            MaxHealth *= 0.5f;
+            WeaponInInstrumentalCase = "кинжалом";
+            MaxHealth *= 0.8f;
             CurrentHealth = MaxHealth;
             ArmorInPercents *= 0.5f;
-            Strength *= 0.7f;
-            SpecialAbility = $"70% вероятность нанести ответный удар";
+            Strength *= 0.9f;
+            SpecialAbility = $"{DodgingProbability}% вероятность увернуться от удара.";
         }
 
-        public override void HitTheOpponent(Gladiator opponent)
+        public override float TakeAHit(float damage)
         {
-            throw new NotImplementedException();
+            if (Random.Next(0, MaxPercent) < DodgingProbability)
+                return DodgeTheHit();
+            else
+                return base.TakeAHit(damage);
         }
 
-        public override void TakeAHit(float damage)
+        private float DodgeTheHit()
         {
-            throw new NotImplementedException();
+            Logger.PrintMessage($"{Name} увернулся от удара.\n");
+            return 0;
         }
     }
 }
