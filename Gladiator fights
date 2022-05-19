@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 
 namespace Lessons
 {
@@ -8,23 +7,18 @@ namespace Lessons
         public static void Main()
         {
             Game game = new Game();
-            game.StartNewGame();
+            game.StartNewGame(true);
         }
     }
 
     class Logger
     {
-        private bool _testMode = false;
-        public ConsoleColor Color { get; set; }
+        private bool _testMode;
+        public ConsoleColor Color { get; private set; }
 
-        public Logger(ConsoleColor color)
+        public Logger(ConsoleColor color, bool isTestMode = false)
         {
             Color = color;
-        }
-
-        public Logger(bool isTestMode)
-        {
-            Color = ConsoleColor.White;
             _testMode = isTestMode;
         }
 
@@ -42,6 +36,9 @@ namespace Lessons
 
     class Game
     {
+        private const ConsoleColor FirstGladiatorColor = ConsoleColor.Red;
+        private const ConsoleColor SecondGladiatorColor = ConsoleColor.Cyan;
+        private const int MaxPercent = 100;
         private const int ConsoleWidth = 120;
         private const int ConsoleHeight = 50;
         private Gladiator[] _gladiators =
@@ -53,29 +50,37 @@ namespace Lessons
         private Gladiator _firstGladiator;
         private Gladiator _secondGladiator;
 
-        public void StartNewGame()
+        public void StartNewGame(bool testMode = false)
         {
             Console.SetWindowSize(ConsoleWidth, ConsoleHeight);
             ChooseOpponents();
-            Battle battle = new Battle(_firstGladiator, _secondGladiator);
-            battle.Conduct();
+
+            if (!testMode)
+            {
+                Battle battle = new Battle(_firstGladiator, _secondGladiator);
+                battle.Conduct();
+            }
+            else
+            {
+                ConductBalanceTest();
+            }
         }
 
         public void ConductBalanceTest()
         {
-            Console.SetWindowSize(ConsoleWidth, ConsoleHeight);
-            ChooseOpponents();
-            Console.WriteLine("Укажите количество боёв. Рекомендуется 5000000.");
+            Console.WriteLine("Укажите количество боёв. Рекомендуется 1000000.");
             int.TryParse(Console.ReadLine(), out int battlesCounter);
-            Console.WriteLine("Выполняется тест. Это может занять несколько минут.");
+            Console.WriteLine("Выполняется тест. Это может занять какое-то время.");
             int fisrstWarriorWinsCounter = 0;
 
             for (int i = 0; i < battlesCounter; i++)
             {
-                Battle battle = new Battle(_firstGladiator.Clone(), _secondGladiator.Clone(), isTestMode: true);
+                Battle battle = new Battle(
+                    _firstGladiator.Clone(isTestMode: true), 
+                    _secondGladiator.Clone(isTestMode: true));
                 fisrstWarriorWinsCounter += battle.TestConduct();
             }
-            float fisrstWarriorWinsPercent = ((float)fisrstWarriorWinsCounter / (float)battlesCounter) * 100f;
+            float fisrstWarriorWinsPercent = ((float)fisrstWarriorWinsCounter / battlesCounter) * MaxPercent;
             Console.WriteLine($"Первый боец побеждал в {fisrstWarriorWinsPercent}% битв.");
             Console.ReadKey(true);
         }
@@ -83,15 +88,12 @@ namespace Lessons
         private void ChooseOpponents()
         {
             Console.WriteLine("Выберите первого бойца:\n");
-            ChooseGladiator(ref _firstGladiator);
+            _firstGladiator = ChooseGladiator(FirstGladiatorColor);
             Console.WriteLine("Выберите второго бойца:\n");
-            ChooseGladiator(ref _secondGladiator);
-
-            if (_firstGladiator.Equals(_secondGladiator))
-                _secondGladiator = _firstGladiator.Clone();
+            _secondGladiator = ChooseGladiator(SecondGladiatorColor);
         }
 
-        private void ChooseGladiator(ref Gladiator gladiator)
+        private Gladiator ChooseGladiator(ConsoleColor color)
         {
             int gladiatorNumber = 0;
 
@@ -101,7 +103,7 @@ namespace Lessons
                 gladiatorNumber = GetGladiatorNumber();
                 Console.Clear();
             }
-            gladiator = _gladiators[gladiatorNumber - 1];
+            return _gladiators[gladiatorNumber - 1].Clone(color);
         }
 
         private int GetGladiatorNumber()
@@ -132,31 +134,15 @@ namespace Lessons
     {
         private const int CursorStartTopPosition = 4;
         private const int CursorTopPositionThreshold = 25;
-        private const ConsoleColor FirstGladiatorColor = ConsoleColor.Red;
-        private const ConsoleColor SecondGladiatorColor = ConsoleColor.Cyan;
         private Gladiator _firstGladiator;
         private Gladiator _secondGladiator;
         private int _cursorTopPosition = CursorStartTopPosition;
-        private Random _random = new Random();
         private Logger _logger = new Logger(ConsoleColor.Green);
 
-        public Battle(Gladiator firstGladiator, Gladiator secondGladiator, bool isTestMode = false)
+        public Battle(Gladiator firstGladiator, Gladiator secondGladiator)
         {
             _firstGladiator = firstGladiator;
-            _firstGladiator.Random = _random;
             _secondGladiator = secondGladiator;
-            _secondGladiator.Random = _random;
-
-            if (isTestMode)
-            {
-                _firstGladiator.Logger = new Logger(isTestMode: true);
-                _secondGladiator.Logger = new Logger(isTestMode: true);
-            }
-            else
-            {
-                _firstGladiator.Logger = new Logger(FirstGladiatorColor);
-                _secondGladiator.Logger = new Logger(SecondGladiatorColor);
-            }
         }
 
         public void Conduct()
@@ -214,6 +200,7 @@ namespace Lessons
         protected const int MaxPercent = 100;
         protected const int MaxDamageInPercents = 140;
         protected const int MinDamageInPercents = 60;
+        protected static Random Random = new Random();
         protected string Weapon;
         protected string WeaponInInstrumentalCase;
         protected string SpecialAbility;
@@ -224,23 +211,27 @@ namespace Lessons
 
         public string Name { get; protected set; }
         public float CurrentHealth { get; protected set; }
-        public Random Random { protected get; set; } = new Random();
-        public Logger Logger { get; set; } = new Logger(ConsoleColor.White);
+        public Logger Logger { get; protected set; }
 
-        public Gladiator Clone()
+        public Gladiator(ConsoleColor color = ConsoleColor.White, bool testMode = false)
+        {
+            Logger = new Logger(color, testMode);
+        }
+
+        public Gladiator Clone(ConsoleColor color = ConsoleColor.White, bool isTestMode = false)
         {
             switch (this)
             {
                 case Swordsman swordsman:
-                    return new Swordsman();
+                    return new Swordsman(color, isTestMode);
                 case Spearman spearman:
-                    return new Spearman();
+                    return new Spearman(color, isTestMode);
                 case Berserk berserk:
-                    return new Berserk();
+                    return new Berserk(color, isTestMode);
                 case Wizard wizard:
-                    return new Wizard();
+                    return new Wizard(color, isTestMode);
                 case Assassin assassin:
-                    return new Assassin();
+                    return new Assassin(color, isTestMode);
                 default:
                     throw new Exception();
             }
@@ -321,7 +312,7 @@ namespace Lessons
     {
         private const float secondHitProbability = 20;
 
-        public Swordsman()
+        public Swordsman(ConsoleColor color = ConsoleColor.White, bool testMode = false) : base(color, testMode)
         {
             Name = "Мечник";
             Weapon = "Одноручный меч";
@@ -355,7 +346,7 @@ namespace Lessons
         private const int TurnsAbilityActivated = 3;
         private int _currentTurn = 1;
 
-        public Wizard()
+        public Wizard(ConsoleColor color = ConsoleColor.White, bool testMode = false) : base(color, testMode)
         {
             Name = "Колдун";
             Weapon = "Магия";
@@ -396,7 +387,7 @@ namespace Lessons
         private const float DamageIncreaseFactor = 2;
         private const float IncreaseDamageProbability = 15;
 
-        public Berserk()
+        public Berserk(ConsoleColor color = ConsoleColor.White, bool testMode = false) : base(color, testMode)
         {
             Name = "Берсерк";
             Weapon = "Двуручный топор";
@@ -430,7 +421,7 @@ namespace Lessons
         private const float DamageIncreaseFactor = 2;
         private const float IncreaseDamageProbability = 10;
 
-        public Spearman()
+        public Spearman(ConsoleColor color = ConsoleColor.White, bool testMode = false) : base(color, testMode)
         {
             Name = "Копейщик";
             Weapon = "Копьё";
@@ -476,7 +467,7 @@ namespace Lessons
     {
         private const float DodgingProbability = 50f;
 
-        public Assassin()
+        public Assassin(ConsoleColor color = ConsoleColor.White, bool testMode = false) : base(color, testMode)
         {
             Name = "Ассасин";
             Weapon = "Кинжал";
