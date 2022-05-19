@@ -7,7 +7,7 @@ namespace Lessons
         public static void Main()
         {
             Game game = new Game();
-            game.StartNewGame(true);
+            game.StartNewGame();
         }
     }
 
