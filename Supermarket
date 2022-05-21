@@ -1,0 +1,211 @@
+using System;
+using System.Collections.Generic;
+
+namespace Lessons
+{
+    class Lessons
+    {
+        public static void Main()
+        {
+            Ware[] wares = GetWares();
+            Dictionary<string, int> prices = GetRandomPrices(wares);
+            Queue<Customer> customers = GetRandomCustomersQueue(wares);
+            Store store = new Store(prices, customers);
+            store.ServeCustomers();
+        }
+
+        private static Ware[] GetWares()
+        {
+            return new Ware[] {
+                new Ware("Хлеб"),
+                new Ware("Колбаса"),
+                new Ware("Сыр"),
+                new Ware("Масло"),
+                new Ware("Мясо"),
+                new Ware("Рыба"),
+                new Ware("Приправы"),
+            };
+        }
+
+        private static Dictionary<string, int> GetRandomPrices(Ware[] wares)
+        {
+            Random random = new Random();
+            int priceLowerBound = 100;
+            int priceUpperBound = 1000;
+            Dictionary<string, int> prices = new Dictionary<string, int>();
+
+            foreach (Ware ware in wares)
+                prices.Add(ware.Name, random.Next(priceLowerBound, priceUpperBound));
+
+            return prices;
+        }
+
+        private static Queue<Customer> GetRandomCustomersQueue(Ware[] wares)
+        {
+            Random random = new Random();
+            string inputData;
+            int customersCount = 0;
+            bool isCorrectCustomersCount = false;
+
+            while (!isCorrectCustomersCount)
+            {
+                Console.Write("Введите число покупателей: ");
+                inputData = Console.ReadLine();
+                isCorrectCustomersCount = int.TryParse(inputData, out customersCount);
+            }
+            Queue<Customer> customers = new Queue<Customer>();
+
+            for (int i = 0; i < customersCount; i++)
+                customers.Enqueue(GetRandomCustomer(wares, random));
+
+            return customers;
+        }
+
+        private static Customer GetRandomCustomer(Ware[] wares, Random random)
+        {
+            int moneyUpperBound = 5000;
+            int customerMoney = random.Next(moneyUpperBound);
+            Customer customer = new Customer(customerMoney);
+            int waresCountUpperBound = 7;
+            int waresCountLowerBound = 1;
+            int customerWaresCount = random.Next(waresCountLowerBound, waresCountUpperBound);
+            int wareNumber;
+
+            for (int i = 0; i < customerWaresCount; i++)
+            {
+                wareNumber = random.Next(wares.Length);
+                Ware customerWare = wares[wareNumber].Clone();
+                customer.AddWare(customerWare);
+            }
+            return customer;
+        }
+    }
+
+    class Customer
+    {
+        private static Random _random = new Random();
+        private int _money;
+        private List<Ware> _shoppingCart = new List<Ware>();
+
+        public Customer(int money)
+        {
+            _money = money;
+        }
+
+        public void AddWare(Ware ware)
+        {
+            if (ware != null)
+                _shoppingCart.Add(ware);
+        }
+
+        public void PayForWares(Store store)
+        {
+            int moneyToPay = GetTotalCost(store);
+
+            while (NotEnoughMoney(moneyToPay) && _shoppingCart.Count > 0)
+            {
+                RemoveRandomWare();
+                moneyToPay = GetTotalCost(store);
+            }
+            if (_shoppingCart.Count != 0)
+            {
+                store.TakeMoney(moneyToPay);
+                Console.WriteLine("Покупатель оплатил следующие товары:");
+                ShowShoppingCart(store);
+                Console.WriteLine($"Общая стоимость: {moneyToPay} руб.\n");
+            }
+            else
+            {
+                Console.WriteLine("У покупателя недостаточно денег, он уходит без покупок.\n");
+            }
+        }
+
+        private int GetTotalCost(Store store)
+        {
+            int totalCost = 0;
+
+            foreach (Ware ware in _shoppingCart)
+                totalCost += store.GetWareCost(ware);
+
+            return totalCost;
+        }
+
+        private bool NotEnoughMoney(int moneyToPay)
+        {
+            return (moneyToPay > _money);
+        }
+
+        private void RemoveRandomWare()
+        {
+            int wareNumber = _random.Next(0, _shoppingCart.Count);
+            Console.WriteLine($"Покупатель выложил товар: {_shoppingCart[wareNumber].Name}.");
+            _shoppingCart.RemoveAt(wareNumber);
+        }
+
+        private void ShowShoppingCart(Store store)
+        {
+            foreach (Ware ware in _shoppingCart)
+                Console.WriteLine($"{ware.Name,-8} - {store.GetWareCost(ware)} руб.");
+        }
+    }
+
+    class Store
+    {
+        private int _money;
+        private Dictionary<string, int> _prices;
+        private Queue<Customer> _customers;
+
+        public Store(Dictionary<string, int> prices, Queue<Customer> customers)
+        {
+            _prices = prices;
+            _customers = customers;
+        }
+
+        public void ServeCustomers()
+        {
+            Console.Clear();
+            int customerNumber = 1;
+
+            while (_customers.Count > 0)
+            {
+                Console.WriteLine($"Покупатель_{customerNumber++}:");
+                _customers.Dequeue().PayForWares(this);
+                Console.ReadKey(true);
+            }
+            Console.Clear();
+            Console.WriteLine($"Все покупатели обслужены. Выручка магазина: {_money} руб.");
+            Console.ReadKey(true);
+        }
+
+        public int GetWareCost(Ware ware)
+        {
+            if (_prices.ContainsKey(ware.Name) == false)
+                throw new ArgumentException();
+
+            return _prices[ware.Name];
+        }
+
+        public void TakeMoney(int money)
+        {
+            if (money < 0)
+                throw new ArgumentException();
+
+            _money += money;
+        }
+    }
+
+    class Ware
+    {
+        public string Name { get; private set; }
+
+        public Ware(string name)
+        {
+            Name = name;
+        }
+
+        public Ware Clone()
+        {
+            return new Ware(Name);
+        }
+    }
+}
