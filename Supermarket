@@ -7,40 +7,40 @@ namespace Lessons
     {
         public static void Main()
         {
-            Ware[] wares = GetWares();
-            Dictionary<string, int> prices = GetRandomPrices(wares);
-            Queue<Customer> customers = GetRandomCustomersQueue(wares);
+            Product[] products = GetProducts();
+            Dictionary<string, int> prices = GetRandomPrices(products);
+            Queue<Customer> customers = GetRandomCustomersQueue(products);
             Store store = new Store(prices, customers);
             store.ServeCustomers();
         }
 
-        private static Ware[] GetWares()
+        private static Product[] GetProducts()
         {
-            return new Ware[] {
-                new Ware("Хлеб"),
-                new Ware("Колбаса"),
-                new Ware("Сыр"),
-                new Ware("Масло"),
-                new Ware("Мясо"),
-                new Ware("Рыба"),
-                new Ware("Приправы"),
+            return new Product[] {
+                new Product("Хлеб"),
+                new Product("Колбаса"),
+                new Product("Сыр"),
+                new Product("Масло"),
+                new Product("Мясо"),
+                new Product("Рыба"),
+                new Product("Приправы"),
             };
         }
 
-        private static Dictionary<string, int> GetRandomPrices(Ware[] wares)
+        private static Dictionary<string, int> GetRandomPrices(Product[] products)
         {
             Random random = new Random();
             int priceLowerBound = 100;
             int priceUpperBound = 1000;
             Dictionary<string, int> prices = new Dictionary<string, int>();
 
-            foreach (Ware ware in wares)
-                prices.Add(ware.Name, random.Next(priceLowerBound, priceUpperBound));
+            foreach (Product product in products)
+                prices.Add(product.Name, random.Next(priceLowerBound, priceUpperBound));
 
             return prices;
         }
 
-        private static Queue<Customer> GetRandomCustomersQueue(Ware[] wares)
+        private static Queue<Customer> GetRandomCustomersQueue(Product[] products)
         {
             Random random = new Random();
             string inputData;
@@ -56,26 +56,26 @@ namespace Lessons
             Queue<Customer> customers = new Queue<Customer>();
 
             for (int i = 0; i < customersCount; i++)
-                customers.Enqueue(GetRandomCustomer(wares, random));
+                customers.Enqueue(GetRandomCustomer(products, random));
 
             return customers;
         }
 
-        private static Customer GetRandomCustomer(Ware[] wares, Random random)
+        private static Customer GetRandomCustomer(Product[] products, Random random)
         {
-            int moneyUpperBound = 5000;
+            int moneyUpperBound = 4000;
             int customerMoney = random.Next(moneyUpperBound);
             Customer customer = new Customer(customerMoney);
-            int waresCountUpperBound = 7;
-            int waresCountLowerBound = 1;
-            int customerWaresCount = random.Next(waresCountLowerBound, waresCountUpperBound);
-            int wareNumber;
+            int productsCountUpperBound = 7;
+            int productsCountLowerBound = 1;
+            int customerProductsCount = random.Next(productsCountLowerBound, productsCountUpperBound);
+            int productNumber;
 
-            for (int i = 0; i < customerWaresCount; i++)
+            for (int i = 0; i < customerProductsCount; i++)
             {
-                wareNumber = random.Next(wares.Length);
-                Ware customerWare = wares[wareNumber].Clone();
-                customer.AddWare(customerWare);
+                productNumber = random.Next(products.Length);
+                Product customerProduct = products[productNumber].Clone();
+                customer.AddProduct(customerProduct);
             }
             return customer;
         }
@@ -85,67 +85,50 @@ namespace Lessons
     {
         private static Random _random = new Random();
         private int _money;
-        private List<Ware> _shoppingCart = new List<Ware>();
+        private List<Product> _shoppingCart = new List<Product>();
 
         public Customer(int money)
         {
             _money = money;
         }
 
-        public void AddWare(Ware ware)
+        public void AddProduct(Product product)
         {
-            if (ware != null)
-                _shoppingCart.Add(ware);
+            if (product != null)
+                _shoppingCart.Add(product);
         }
 
-        public void PayForWares(Store store)
+        public List<Product> GetShoppingCart()
         {
-            int moneyToPay = GetTotalCost(store);
+            List<Product> products = new List<Product>();
 
-            while (NotEnoughMoney(moneyToPay) && _shoppingCart.Count > 0)
+            foreach (Product product in _shoppingCart)
+                products.Add(product);
+
+            return products;
+        }
+
+        public int GiveMoney(int requiredMoney)
+        {
+            if (IsEnoughMoney(requiredMoney))
             {
-                RemoveRandomWare();
-                moneyToPay = GetTotalCost(store);
-            }
-            if (_shoppingCart.Count != 0)
-            {
-                store.TakeMoney(moneyToPay);
-                Console.WriteLine("Покупатель оплатил следующие товары:");
-                ShowShoppingCart(store);
-                Console.WriteLine($"Общая стоимость: {moneyToPay} руб.\n");
+                _money -= requiredMoney;
+                return requiredMoney;
             }
             else
-            {
-                Console.WriteLine("У покупателя недостаточно денег, он уходит без покупок.\n");
-            }
+            { return 0; }
         }
 
-        private int GetTotalCost(Store store)
+        public void RemoveRandomProduct()
         {
-            int totalCost = 0;
-
-            foreach (Ware ware in _shoppingCart)
-                totalCost += store.GetWareCost(ware);
-
-            return totalCost;
+            int productNumber = _random.Next(0, _shoppingCart.Count);
+            Console.WriteLine($"Покупатель выложил товар: {_shoppingCart[productNumber].Name}.");
+            _shoppingCart.RemoveAt(productNumber);
         }
 
-        private bool NotEnoughMoney(int moneyToPay)
+        private bool IsEnoughMoney(int moneyToPay)
         {
-            return (moneyToPay > _money);
-        }
-
-        private void RemoveRandomWare()
-        {
-            int wareNumber = _random.Next(0, _shoppingCart.Count);
-            Console.WriteLine($"Покупатель выложил товар: {_shoppingCart[wareNumber].Name}.");
-            _shoppingCart.RemoveAt(wareNumber);
-        }
-
-        private void ShowShoppingCart(Store store)
-        {
-            foreach (Ware ware in _shoppingCart)
-                Console.WriteLine($"{ware.Name,-8} - {store.GetWareCost(ware)} руб.");
+            return (moneyToPay <= _money);
         }
     }
 
@@ -169,7 +152,7 @@ namespace Lessons
             while (_customers.Count > 0)
             {
                 Console.WriteLine($"Покупатель_{customerNumber++}:");
-                _customers.Dequeue().PayForWares(this);
+                ServeCustomer(_customers.Dequeue());
                 Console.ReadKey(true);
             }
             Console.Clear();
@@ -177,15 +160,64 @@ namespace Lessons
             Console.ReadKey(true);
         }
 
-        public int GetWareCost(Ware ware)
+        private void ServeCustomer(Customer customer)
         {
-            if (_prices.ContainsKey(ware.Name) == false)
-                throw new ArgumentException();
+            List<Product> customerProducts = customer.GetShoppingCart();
+            ShowCustomerProducts(customerProducts);
+            bool customerIsServed = false;
 
-            return _prices[ware.Name];
+            while (!customerIsServed)
+            {
+                customerIsServed = TrySellProducts(customerProducts, customer);
+
+                if (!customerIsServed)
+                {
+                    Console.Write("У покупателя недостаточно денег. ");
+                    customer.RemoveRandomProduct();
+                    customerProducts = customer.GetShoppingCart();
+                }
+            }
         }
 
-        public void TakeMoney(int money)
+        private void ShowCustomerProducts(List<Product> customerProducts)
+        {
+            Console.WriteLine("Корзина покупателя:");
+
+            foreach (Product product in customerProducts)
+                Console.WriteLine($"{product.Name,-8} - {_prices[product.Name]} руб.");
+        }
+
+        private bool TrySellProducts(List<Product> customerProducts, Customer customer)
+        {
+            if (customerProducts.Count == 0)
+            {
+                Console.WriteLine("Покупатель уходит без покупок.\n");
+                return true;
+            }
+            int totalСost = GetTotalCost(customerProducts);
+            int moneyFromCustomer = customer.GiveMoney(totalСost);
+
+            if (moneyFromCustomer == totalСost)
+            {
+                TakeMoney(moneyFromCustomer);
+                Console.WriteLine($"Клиент обслужен. Сумма покупки: {totalСost} руб.\n");
+                return true;
+            }
+            else
+            { return false; }
+        }
+
+        private int GetTotalCost(List<Product> customerProducts)
+        {
+            int totalCost = 0;
+
+            foreach (Product product in customerProducts)
+                totalCost += _prices[product.Name];
+
+            return totalCost;
+        }
+
+        private void TakeMoney(int money)
         {
             if (money < 0)
                 throw new ArgumentException();
@@ -194,18 +226,18 @@ namespace Lessons
         }
     }
 
-    class Ware
+    class Product
     {
         public string Name { get; private set; }
 
-        public Ware(string name)
+        public Product(string name)
         {
             Name = name;
         }
 
-        public Ware Clone()
+        public Product Clone()
         {
-            return new Ware(Name);
+            return new Product(Name);
         }
     }
 }
