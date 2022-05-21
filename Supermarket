@@ -47,7 +47,7 @@ namespace Lessons
             int customersCount = 0;
             bool isCorrectCustomersCount = false;
 
-            while (!isCorrectCustomersCount)
+            while (isCorrectCustomersCount == false)
             {
                 Console.Write("Введите число покупателей: ");
                 inputData = Console.ReadLine();
@@ -116,7 +116,9 @@ namespace Lessons
                 return requiredMoney;
             }
             else
-            { return 0; }
+            {
+                return 0;
+            }
         }
 
         public void RemoveRandomProduct()
@@ -204,7 +206,9 @@ namespace Lessons
                 return true;
             }
             else
-            { return false; }
+            {
+                return false;
+            }
         }
 
         private int GetTotalCost(List<Product> customerProducts)
