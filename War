@@ -1,0 +1,329 @@
+using System;
+using System.Collections.Generic;
+
+namespace Lessons
+{
+    class Lessons
+    {
+        public static void Main()
+        {      
+            Platoon firstPlatoon = CreatePlatoon(ConsoleColor.Cyan);
+            Platoon secondPlatoon = CreatePlatoon(ConsoleColor.Red);
+            Battle battle = new Battle(firstPlatoon, secondPlatoon);
+            battle.Start();
+        }
+
+        private static Platoon CreatePlatoon(ConsoleColor color)
+        {
+            List<Squad> squads = new List<Squad>
+            {
+                Squad.CreateSwordsmanSquard(15, color),
+                Squad.CreateArcherSquard(30, color),
+                Squad.CreateWizardSquard(5, color),
+                Squad.CreateBallista(color)
+            };
+            return new Platoon(squads);
+        }
+    }
+
+    class Logger
+    {
+        private ConsoleColor _color;
+
+        public Logger(ConsoleColor color)
+        {
+            _color = color;
+        }
+
+        public void PrintMessage(string message)
+        {
+            ConsoleColor defaultColor = Console.ForegroundColor;
+            Console.ForegroundColor = _color;
+            Console.WriteLine(message);
+            Console.ForegroundColor = defaultColor;
+        }
+    }
+
+    class Battle
+    {
+        private Platoon _firstPlatoon;
+        private Platoon _secondPlatoon;
+        private int _cursorTopPosition;
+        private Logger _logger = new Logger(ConsoleColor.Green);
+
+        public Battle(Platoon firstPlatoon, Platoon secondPlatoon)
+        {
+            _firstPlatoon = firstPlatoon;
+            _secondPlatoon = secondPlatoon;
+        }
+
+        public void Start()
+        {
+            Console.CursorVisible = false;
+            ShowInfo();
+            _cursorTopPosition = Console.CursorTop;
+            Console.ReadKey();
+
+            while (_firstPlatoon.CanFight() && _secondPlatoon.CanFight())
+                ExchangeHits();
+
+            Console.Clear();
+
+            if (_firstPlatoon.CanFight())
+                _logger.PrintMessage("Победил первый взвод");
+            else
+                _logger.PrintMessage("Победил второй взвод");
+
+            Console.ReadKey();
+        }
+
+        private void ShowInfo()
+        {
+            Console.WriteLine("Взвод_1:");
+            _firstPlatoon.ShowInfo();
+            Console.WriteLine();
+            Console.WriteLine("Взвод_2:");
+            _secondPlatoon.ShowInfo();
+            Console.WriteLine();
+        }
+
+        private void ExchangeHits()
+        {
+            Console.Clear();
+            Console.CursorTop = _cursorTopPosition;
+            float damage = _firstPlatoon.GetDamage();
+            _secondPlatoon.TakeDamage(damage);
+            Console.WriteLine();
+
+            if (_secondPlatoon.CanFight())
+            {
+                damage = _secondPlatoon.GetDamage();
+                _firstPlatoon.TakeDamage(damage);
+            }
+            Console.SetCursorPosition(0, 0);
+            ShowInfo();
+            Console.ReadKey(true);
+        }
+    }
+
+    class Platoon
+    {
+        private static Random random = new Random();
+        private List<Squad> _squads = new List<Squad>();
+
+        public Platoon(List<Squad> squads)
+        {
+            _squads = squads;
+        }
+
+        public bool CanFight()
+        {
+            return _squads.Count > 0;
+        }
+
+        public void ShowInfo()
+        {
+            foreach (Squad squad in _squads)
+                squad.ShowInfo();
+        }
+
+        public float GetDamage()
+        {
+            return _squads[random.Next(0, _squads.Count)].GetDamage();
+        }
+
+        public void TakeDamage(float damage)
+        {
+            int squadNumber = random.Next(0, _squads.Count);
+            Squad squad = _squads[squadNumber];
+            squad.TakeDamage(damage);
+
+            if (squad.CanFight() == false)
+                _squads.RemoveAt(squadNumber);
+        }
+    }
+
+    class Squad
+    {
+        private const int MaxPercent = 100;
+        private List<CombatUnit> _combatUnits = new List<CombatUnit>();
+        private Logger _logger;
+
+        private Squad(List<CombatUnit> combatUnits, ConsoleColor color)
+        {
+            _combatUnits = combatUnits;
+            _logger = new Logger(color);
+            UnitName = combatUnits[0].Name;
+        }
+
+        public string UnitName { get; private set; }
+
+        public static Squad CreateSwordsmanSquard(int unitCount, ConsoleColor color)
+        {
+            List<CombatUnit> combatUnits = new List<CombatUnit>();
+
+            for (int i = 0; i < unitCount; i++)
+                combatUnits.Add(new Swordsman());
+
+            return new Squad(combatUnits, color);
+        }
+
+        public static Squad CreateArcherSquard(int unitCount, ConsoleColor color)
+        {
+            List<CombatUnit> combatUnits = new List<CombatUnit>();
+
+            for (int i = 0; i < unitCount; i++)
+                combatUnits.Add(new Archer());
+
+            return new Squad(combatUnits, color);
+        }
+
+        public static Squad CreateWizardSquard(int unitCount, ConsoleColor color)
+        {
+            List<CombatUnit> combatUnits = new List<CombatUnit>();
+
+            for (int i = 0; i < unitCount; i++)
+                combatUnits.Add(new Wizard());
+
+            return new Squad(combatUnits, color);
+        }
+
+        public static Squad CreateBallista(ConsoleColor color)
+        {
+            List<CombatUnit> combatUnits = new List<CombatUnit>
+            {
+                new Ballista()
+            };
+            return new Squad(combatUnits, color);
+        }
+
+        public int GetDamage()
+        {
+            int resultDamage = 0;
+
+            foreach (CombatUnit unit in _combatUnits)
+                resultDamage += unit.GetDamage();
+
+            _logger.PrintMessage($"{UnitName} нанёс {resultDamage} урона.");
+            return resultDamage;
+        }
+
+        public void TakeDamage(float damage)
+        {
+            int killedNumber = 0;
+            float receivedDamage = damage * (1 - _combatUnits[0].ArmorInPercents / MaxPercent);
+            _logger.PrintMessage($"{UnitName} получил {receivedDamage} урона.");
+
+            while (_combatUnits.Count > 0)
+            {
+                if (_combatUnits[0].TryTakeDamage(receivedDamage) == false)
+                {
+                    receivedDamage -= _combatUnits[0].CurrentHealth;
+                    KillUnit();
+                    killedNumber++;
+                }
+                else
+                {
+                    break;
+                }
+            }
+            if (_combatUnits.Count > 0)
+                _logger.PrintMessage($"Погибло {killedNumber} юнитов в отряде.");
+            else
+                _logger.PrintMessage("Погиб весь отряд.");
+        }
+
+        public void ShowInfo()
+        {
+            _logger.PrintMessage($"{UnitName}: {_combatUnits.Count} ({_combatUnits[0].CurrentHealth:0})");
+        }
+
+        public bool CanFight()
+        {
+            return _combatUnits.Count > 0;
+        }
+
+        private void KillUnit()
+        {
+            _combatUnits.RemoveAt(0);
+        }
+    }
+
+    abstract class CombatUnit
+    {
+        protected float MaxHealth = 100;
+        protected int MaxDamage = 80;
+        protected int MinDamage = 60;
+        protected Random Random = new Random();
+
+        public string Name { get; protected set; }
+        public float ArmorInPercents { get; protected set; } = 50;
+        public float CurrentHealth { get; protected set; }
+
+        public virtual int GetDamage()
+        {
+            return Random.Next(MinDamage, MaxDamage + 1);
+        }
+
+        public virtual bool TryTakeDamage(float damage)
+        {
+            if (damage < CurrentHealth)
+            {
+                CurrentHealth -= damage;
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+    }
+
+    class Swordsman : CombatUnit
+    {
+        public Swordsman()
+        {
+            Name = "Мечник";
+            CurrentHealth = MaxHealth;
+        }
+    }
+
+    class Archer : CombatUnit
+    {
+        public Archer()
+        {
+            Name = "Лучник";
+            ArmorInPercents = 20;
+            MaxDamage = 50;
+            MinDamage = 30;
+            ArmorInPercents = 20;
+            CurrentHealth = MaxHealth;
+        }
+    }
+
+    class Ballista : CombatUnit
+    {
+        public Ballista()
+        {
+            Name = "Баллиста";
+            MaxHealth = 500;
+            ArmorInPercents = 80;
+            MaxDamage = 600;
+            MinDamage = 500;
+            CurrentHealth = MaxHealth;
+        }
+    }
+
+    class Wizard : CombatUnit
+    {
+        public Wizard()
+        {
+            Name = "Маг";
+            MaxHealth = 500;
+            ArmorInPercents = 40;
+            MaxDamage = 200;
+            MinDamage = 150;
+            CurrentHealth = MaxHealth;
+        }
+    }
+}
