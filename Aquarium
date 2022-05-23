@@ -1,0 +1,185 @@
+using System;
+using System.Collections.Generic;
+
+namespace Lessons
+{
+    class Lessons
+    {
+        public static void Main()
+        {
+            Aquarium aquarium = new Aquarium();
+            int monthCounter = 1;
+            string inputData = string.Empty;
+
+            while (inputData != "3")
+            {
+                Console.Clear();
+                Console.WriteLine($"Месяц: {monthCounter++}");
+                aquarium.ShowInfo();
+                Console.WriteLine("" +
+                    "\n1. Добавить рыбку." +
+                    "\n2. Достать рыбку." +
+                    "\n3. Выйти" +
+                    "\nВведите любую строку, чтобы пропустить месяц.\n");
+                inputData = Console.ReadLine();
+
+                switch (inputData)
+                {
+                    case "1":
+                        aquarium.AddFish();
+                        break;
+                    case "2":
+                        aquarium.RemoveFish();
+                        break;
+                }
+                aquarium.SkipMonth();
+            }
+        }
+    }
+
+    class Logger
+    {
+        private ConsoleColor _color;
+
+        public Logger(ConsoleColor color)
+        {
+            _color = color;
+        }
+
+        public void PrintMessage(string message)
+        {
+            ConsoleColor defaultColor = Console.ForegroundColor;
+            Console.ForegroundColor = _color;
+            Console.WriteLine(message);
+            Console.ForegroundColor = defaultColor;
+        }
+    }
+
+    class Aquarium
+    {
+        private const int MaxFishCount = 10;
+        private List<Fish> _fishList = new List<Fish>();
+
+        public void AddFish()
+        {
+            if (IsAquariumFull())
+            {
+                Console.WriteLine("Нельзя добавить новую рыбку. Аквариум полон.");
+            }
+            else
+            {
+                Console.Clear();
+                Console.Write("Имя рыбки: ");
+                string fishName = Console.ReadLine();
+                Console.Write("Описание: ");
+                string fishDesctiption = Console.ReadLine();
+                _fishList.Add(new Fish(fishName, fishDesctiption));
+                Console.WriteLine($"Рыбка {fishName} добавлена.");
+            }
+            Console.ReadKey(true);
+        }
+
+        public void RemoveFish()
+        {
+            Console.Clear();
+            ShowInfo();
+            if (_fishList.Count > 0)
+            {
+                Console.Write("\nКакую рыбку достать? Номер: ");
+                int.TryParse(Console.ReadLine(), out int fishNumber);
+
+                if (IsCorrectFishNumber(fishNumber))
+                {
+                    Console.WriteLine($"Вы достали рыбку {_fishList[fishNumber - 1].Name} из аквариума.");
+                    _fishList.RemoveAt(fishNumber - 1);
+                }
+                else
+                {
+                    Console.WriteLine("Такой рыбки неть.");
+                }
+            }
+            Console.ReadKey(true);
+        }
+
+        public void ShowInfo()
+        {
+            if (_fishList.Count > 0)
+            {
+                Console.WriteLine("У вас в аквариуме:");
+
+                for (int i = 0; i < _fishList.Count; i++)
+                {
+                    Console.Write($"{i + 1}. ");
+                    _fishList[i].ShowInfo();
+                }
+            }
+            else
+            {
+                Console.WriteLine("В аквариуме пусто. Добавьте рыбок.");
+            }
+        }
+
+        public void SkipMonth()
+        {
+            for (int i = 0; i < _fishList.Count; i++)
+            {
+                _fishList[i].SkipMonth();
+                if (_fishList[i].IsAlive == false)
+                {
+                    Console.Clear();
+                    Console.WriteLine($"Рыбка {_fishList[i].Name} умерла :(");
+                    _fishList.RemoveAt(i);
+                    Console.ReadKey(true);
+                }
+            }
+        }
+
+        private bool IsCorrectFishNumber(int fishNumber)
+        {
+            return (fishNumber > 0) && (fishNumber <= _fishList.Count);
+        }
+
+        private bool IsAquariumFull()
+        {
+            return _fishList.Count == MaxFishCount;
+        }
+    }
+
+    class Fish
+    {
+        private const int MaxLifespanInMonths = 12;
+        private const int MinLifespanInMonths = 6;
+        private static Random _random = new Random();
+        private readonly int _lifespanInMonths;
+        private int _leftMonthsToLive;
+        private string _description;
+        private Logger _logger = new Logger(ConsoleColor.Cyan);
+
+        public Fish(string name, string description = "Нет описания.")
+        {
+            Name = name;
+            _description = description;
+            _lifespanInMonths = _random.Next(MinLifespanInMonths, MaxLifespanInMonths + 1);
+            _leftMonthsToLive = _lifespanInMonths;
+        }
+
+        public string Name { get; private set; }
+        public bool IsAlive { get; private set; } = true;
+
+        public void ShowInfo()
+        {
+            _logger.PrintMessage($"Рыбка {Name}: {_description}");
+        }
+
+        public void SkipMonth()
+        {
+            if (IsAlive)
+            {
+                _leftMonthsToLive--;
+
+                if (_leftMonthsToLive == 0)
+                    IsAlive = false;
+            }
+        }
+    }
+}
