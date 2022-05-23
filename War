@@ -6,7 +6,7 @@ namespace Lessons
     class Lessons
     {
         public static void Main()
-        {      
+        {
             Platoon firstPlatoon = CreatePlatoon(ConsoleColor.Cyan);
             Platoon secondPlatoon = CreatePlatoon(ConsoleColor.Red);
             Battle battle = new Battle(firstPlatoon, secondPlatoon);
@@ -15,16 +15,104 @@ namespace Lessons
 
         private static Platoon CreatePlatoon(ConsoleColor color)
         {
+            var swordsmanFactory = new SwordsmanFactory(15, color);
+            var archerFactory = new ArcherFactory(30, color);
+            var wizardFactory = new WizardFactory(5, color);
+            var ballistaFactory = new BallistaFactory(color);
             List<Squad> squads = new List<Squad>
             {
-                Squad.CreateSwordsmanSquard(15, color),
-                Squad.CreateArcherSquard(30, color),
-                Squad.CreateWizardSquard(5, color),
-                Squad.CreateBallista(color)
+                new Squad(swordsmanFactory),
+                new Squad(archerFactory),
+                new Squad(wizardFactory),
+                new Squad(ballistaFactory),
             };
             return new Platoon(squads);
         }
     }
+
+    abstract class SquadFactory
+    {
+        protected int UnitCount;
+
+        public SquadFactory(ConsoleColor color)
+        {
+            Color = color;
+        }
+
+        public ConsoleColor Color { get; protected set; }
+        abstract public List<CombatUnit> CreateCombatUnitList();
+    }
+
+    class SwordsmanFactory : SquadFactory
+    {
+        public SwordsmanFactory(int unitCount, ConsoleColor color) : base(color)
+        {
+            UnitCount = unitCount;
+        }
+
+        public override List<CombatUnit> CreateCombatUnitList()
+        {
+            List<CombatUnit> combatUnits = new List<CombatUnit>();
+
+            for (int i = 0; i < UnitCount; i++)
+                combatUnits.Add(new Swordsman());
+
+            return combatUnits;
+        }
+    }
+
+    class ArcherFactory : SquadFactory
+    {
+        public ArcherFactory(int unitCount, ConsoleColor color) : base(color)
+        {
+            UnitCount = unitCount;
+        }
+
+        public override List<CombatUnit> CreateCombatUnitList()
+        {
+            List<CombatUnit> combatUnits = new List<CombatUnit>();
+
+            for (int i = 0; i < UnitCount; i++)
+                combatUnits.Add(new Archer());
+
+            return combatUnits;
+        }
+    }
+
+    class WizardFactory : SquadFactory
+    {
+        public WizardFactory(int unitCount, ConsoleColor color) : base(color)
+        {
+            UnitCount = unitCount;
+        }
+
+        public override List<CombatUnit> CreateCombatUnitList()
+        {
+            List<CombatUnit> combatUnits = new List<CombatUnit>();
+
+            for (int i = 0; i < UnitCount; i++)
+                combatUnits.Add(new Wizard());
+
+            return combatUnits;
+        }
+    }
+
+    class BallistaFactory : SquadFactory
+    {
+        public BallistaFactory(ConsoleColor color) : base(color)
+        {
+        }
+
+        public override List<CombatUnit> CreateCombatUnitList()
+        {
+            List<CombatUnit> combatUnits = new List<CombatUnit>
+            {
+                new Ballista()
+            };
+            return combatUnits;
+        }
+    }
+
 
     class Logger
     {
@@ -149,53 +237,14 @@ namespace Lessons
         private List<CombatUnit> _combatUnits = new List<CombatUnit>();
         private Logger _logger;
 
-        private Squad(List<CombatUnit> combatUnits, ConsoleColor color)
+        public Squad(SquadFactory squadFactory)
         {
-            _combatUnits = combatUnits;
-            _logger = new Logger(color);
-            UnitName = combatUnits[0].Name;
+            _combatUnits = squadFactory.CreateCombatUnitList();
+            _logger = new Logger(squadFactory.Color);
+            UnitName = _combatUnits[0].Name;
         }
 
         public string UnitName { get; private set; }
-
-        public static Squad CreateSwordsmanSquard(int unitCount, ConsoleColor color)
-        {
-            List<CombatUnit> combatUnits = new List<CombatUnit>();
-
-            for (int i = 0; i < unitCount; i++)
-                combatUnits.Add(new Swordsman());
-
-            return new Squad(combatUnits, color);
-        }
-
-        public static Squad CreateArcherSquard(int unitCount, ConsoleColor color)
-        {
-            List<CombatUnit> combatUnits = new List<CombatUnit>();
-
-            for (int i = 0; i < unitCount; i++)
-                combatUnits.Add(new Archer());
-
-            return new Squad(combatUnits, color);
-        }
-
-        public static Squad CreateWizardSquard(int unitCount, ConsoleColor color)
-        {
-            List<CombatUnit> combatUnits = new List<CombatUnit>();
-
-            for (int i = 0; i < unitCount; i++)
-                combatUnits.Add(new Wizard());
-
-            return new Squad(combatUnits, color);
-        }
-
-        public static Squad CreateBallista(ConsoleColor color)
-        {
-            List<CombatUnit> combatUnits = new List<CombatUnit>
-            {
-                new Ballista()
-            };
-            return new Squad(combatUnits, color);
-        }
 
         public int GetDamage()
         {
