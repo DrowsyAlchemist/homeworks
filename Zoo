@@ -1,0 +1,253 @@
+using System;
+using System.Collections.Generic;
+
+namespace Lessons
+{
+    class Lessons
+    {
+        public static void Main()
+        {
+            List<Aviary> aviaries = CreateAviaries();
+            Zoo zoo = new Zoo(aviaries);
+            string inputData = string.Empty;
+
+            while (inputData != "5")
+            {
+                Console.Clear();
+                Console.WriteLine(
+                    "Добро пожаловать в зоопарк!\n" +
+                    "Выберите вольер, к которому хотите подойти:\n");
+                zoo.ShowInfo();
+                Console.WriteLine("5. Уйти\n");
+                inputData = Console.ReadLine();
+
+                if (inputData != "5")
+                {
+                    int.TryParse(inputData, out int aviaryNumber);
+                    zoo.PrintAviaryInfo(aviaryNumber);
+                }
+            }
+        }
+
+        private static List<Aviary> CreateAviaries()
+        {
+            var elephantsAviaryFactory = new ElephantsAviaryFactory(4);
+            var tigerAviaryFactory = new TigerAviaryFactory(5);
+            var snakeAviaryFactory = new SnakeAviaryFactory(10);
+            var horseAviaryFactory = new HorseAviaryFactory(6);
+            List<Aviary> aviaries = new List<Aviary>
+            {
+                new Aviary(elephantsAviaryFactory),
+                new Aviary(tigerAviaryFactory),
+                new Aviary(snakeAviaryFactory),
+                new Aviary(horseAviaryFactory),
+            };
+            return aviaries;
+        }
+    }
+
+    enum SexOfAnimal
+    {
+        Самец,
+        Самка
+    }
+
+    class Zoo
+    {
+        private List<Aviary> _aviaries = new List<Aviary>();
+
+        public Zoo(List<Aviary> aviaries)
+        {
+            _aviaries = aviaries;
+        }
+
+        public void ShowInfo()
+        {
+            for (int i = 0; i < _aviaries.Count; i++)
+                Console.WriteLine($"{i + 1}. Вольер {_aviaries[i].AnimalNameInInstrumentalCase}");
+        }
+
+        public void PrintAviaryInfo(int aviaryNumber)
+        {
+            if (IsCorrectAviaryNumber(aviaryNumber))
+                _aviaries[aviaryNumber - 1].ShowInfo();
+            else
+                Console.WriteLine("Нет такого вольера.");
+
+            Console.ReadKey(true);
+        }
+
+        private bool IsCorrectAviaryNumber(int aviaryNumber)
+        {
+            return (aviaryNumber > 0) && (aviaryNumber <= _aviaries.Count);
+        }
+    }
+
+    class Aviary
+    {
+        private List<Animal> _animals = new List<Animal>();
+
+        public Aviary(AviaryFactory aviaryFactory)
+        {
+            _animals = aviaryFactory.CreateAnimalList();
+            AnimalNameInInstrumentalCase = _animals[0].NameInInstrumentalCase;
+        }
+
+        public string AnimalNameInInstrumentalCase { get; private set; }
+
+        public void ShowInfo()
+        {
+            Console.Clear();
+            Console.WriteLine(
+                $"Вальер {_animals[0].NameInInstrumentalCase}.\n" +
+                $"{_animals[0].NameInPluralForm} издают звук: {_animals[0].Sound}.\n" +
+                $"В вольере {_animals.Count} животных:");
+
+            foreach (var animal in _animals)
+                animal.ShowInfo();
+        }
+    }
+
+    abstract class AviaryFactory
+    {
+        protected int AnimalsCount;
+
+        public AviaryFactory(int animalsCount)
+        {
+            if (animalsCount < 0)
+                throw new ArgumentOutOfRangeException();
+
+            AnimalsCount = animalsCount;
+        }
+
+        public abstract List<Animal> CreateAnimalList();
+    }
+
+    class ElephantsAviaryFactory : AviaryFactory
+    {
+        public ElephantsAviaryFactory(int animalsCount) : base(animalsCount)
+        {
+        }
+
+        public override List<Animal> CreateAnimalList()
+        {
+            List<Animal> elephants = new List<Animal>();
+
+            for (int i = 0; i < AnimalsCount; i++)
+                elephants.Add(new Elephant());
+
+            return elephants;
+        }
+    }
+
+    class TigerAviaryFactory : AviaryFactory
+    {
+        public TigerAviaryFactory(int animalsCount) : base(animalsCount)
+        {
+        }
+
+        public override List<Animal> CreateAnimalList()
+        {
+            List<Animal> tigers = new List<Animal>();
+
+            for (int i = 0; i < AnimalsCount; i++)
+                tigers.Add(new Tiger());
+
+            return tigers;
+        }
+    }
+
+    class SnakeAviaryFactory : AviaryFactory
+    {
+        public SnakeAviaryFactory(int animalsCount) : base(animalsCount)
+        {
+        }
+
+        public override List<Animal> CreateAnimalList()
+        {
+            List<Animal> snakes = new List<Animal>();
+
+            for (int i = 0; i < AnimalsCount; i++)
+                snakes.Add(new Snake());
+
+            return snakes;
+        }
+    }
+
+    class HorseAviaryFactory : AviaryFactory
+    {
+        public HorseAviaryFactory(int animalsCount) : base(animalsCount)
+        {
+        }
+
+        public override List<Animal> CreateAnimalList()
+        {
+            List<Animal> horses = new List<Animal>();
+
+            for (int i = 0; i < AnimalsCount; i++)
+                horses.Add(new Horse());
+
+            return horses;
+        }
+    }
+
+    abstract class Animal
+    {
+        private static Random _random = new Random();
+        private SexOfAnimal _sex = (SexOfAnimal)_random.Next(0, 2);
+
+        public string Name { get; protected set; }
+        public string NameInInstrumentalCase { get; protected set; }
+        public string NameInPluralForm { get; protected set; }
+        public string Sound { get; protected set; }
+
+        public void ShowInfo()
+        {
+            Console.WriteLine($"{Name} ({_sex})");
+        }
+    }
+
+    class Elephant : Animal
+    {
+        public Elephant()
+        {
+            Name = "Слон";
+            NameInInstrumentalCase = "со слонами";
+            NameInPluralForm = "Слоны";
+            Sound = "Трубление";
+        }
+    }
+
+    class Tiger : Animal
+    {
+        public Tiger()
+        {
+            Name = "Тигр";
+            NameInInstrumentalCase = "с тиграми";
+            NameInPluralForm = "Тигры";
+            Sound = "Рычание";
+        }
+    }
+
+    class Snake : Animal
+    {
+        public Snake()
+        {
+            Name = "Змея";
+            NameInInstrumentalCase = "со змеями";
+            NameInPluralForm = "Змеи";
+            Sound = "Шипение";
+        }
+    }
+
+    class Horse : Animal
+    {
+        public Horse()
+        {
+            Name = "Лошадь";
+            NameInInstrumentalCase = "с лошадьми";
+            NameInPluralForm = "Лошади";
+            Sound = "Ржание";
+        }
+    }
+}
