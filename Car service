@@ -1,0 +1,452 @@
+using System;
+using System.Collections.Generic;
+
+namespace Lessons
+{
+    class Lessons
+    {
+        public static void Main()
+        {
+            int brokenCarsCount = 30;
+            var brokenCars = GetBrokenCarsQueue(brokenCarsCount);
+            var carPartsCreator = new CarPartsCreator();
+            var partsWarehouse = GetPartsWarehouse(carPartsCreator);
+            var carService = new CarService(partsWarehouse, brokenCars);
+            carService.Run();
+        }
+
+        private static Queue<BrokenCar> GetBrokenCarsQueue(int carsCount)
+        {
+            var cars = new Queue<BrokenCar>();
+            var carPartsCreator = new CarPartsCreator();
+
+            for (int i = 0; i < carsCount; i++)
+                cars.Enqueue(new BrokenCar(carPartsCreator));
+
+            return cars;
+        }
+
+        private static List<CarPartsSet> GetPartsWarehouse(CarPartsCreator carPartsCreator, int partsInSetCount = 3)
+        {
+            Array carPartNames = Enum.GetValues(typeof(CarPartName));
+            int setsCount = carPartNames.Length;
+            var partsWarehouse = new List<CarPartsSet>();
+
+            for (int i = 0; i < setsCount; i++)
+            {
+                var partName = (CarPartName)carPartNames.GetValue(i);
+                var parts = carPartsCreator.GetSameTypePartsSet(partName, partsInSetCount);
+                partsWarehouse.Add(parts);
+            }
+            return partsWarehouse;
+        }
+    }
+
+    enum CarPartName
+    {
+        ЛобовоеСтекло,
+        Дверь,
+        Шина,
+        Диск,
+        Фара,
+        Бампер,
+        Генератор,
+        Аккумулятор,
+        Двигатель,
+        Вентилятор,
+        Фильтр,
+    }
+
+    class CarService
+    {
+        private const int DenialServicePenalty = 1000;
+        private const int CompensationSum = 2500;
+        private const int MaxPercent = 100;
+        private float _priceMarkupInPercents = 50;
+        private int _money;
+        private List<CarPartsSet> _partsWarehouse;
+        private Dictionary<CarPartName, int> _workPrices;
+        private Queue<BrokenCar> _brokenCars;
+
+        public CarService(List<CarPartsSet> partsWarehouse, Queue<BrokenCar> cars)
+        {
+            _partsWarehouse = partsWarehouse;
+            _brokenCars = cars;
+            _workPrices = GetWorkPrices();
+        }
+
+        private BrokenCar CurrentCar => _brokenCars.Peek();
+
+        private Dictionary<CarPartName, int> GetWorkPrices()
+        {
+            return new Dictionary<CarPartName, int>
+            {
+                { CarPartName.ЛобовоеСтекло, 500 },
+                { CarPartName.Дверь, 350 },
+                { CarPartName.Двигатель, 1500 },
+                { CarPartName.Шина, 150 },
+                { CarPartName.Фильтр, 100 },
+                { CarPartName.Бампер, 450 },
+                { CarPartName.Генератор, 1000 },
+                { CarPartName.Вентилятор, 200 },
+                { CarPartName.Аккумулятор, 100 },
+                { CarPartName.Фара, 250 },
+                { CarPartName.Диск, 300 }
+            };
+        }
+
+        public void Run()
+        {
+            while (_brokenCars.Count > 0 && _money >= 0)
+            {
+                Console.Clear();
+                Console.WriteLine(
+                    $"Ваши деньги: {_money}\n\n" +
+                    $"К вам на ремонт приехал автомобиль.");
+                ServeCustomer();
+            }
+            Console.Clear();
+
+            if (_brokenCars.Count == 0)
+                Console.WriteLine($"Все клиенты обслужены.\nВы заработали: {_money}");
+            else
+                Console.WriteLine($"Вы обанкротились.\nВаш долг: {-1 * _money}");
+
+            Console.ReadKey(true);
+        }
+
+        private void ServeCustomer()
+        {
+            var brokenPart = CurrentCar.PeekBrokenPart();
+            int brokenPartPrice = GetCarPartPrice(brokenPart);
+            int workPrice = _workPrices[brokenPart.Name];
+            int totalPrice = brokenPartPrice + workPrice;
+            Console.WriteLine(
+                $"Сломан(а) {brokenPart.Name}\n" +
+                $"Цена детали: {brokenPartPrice}\n" +
+                $"Цена за работу: {workPrice}\n" +
+                $"Всего: {totalPrice}\n\n" +
+                $"1. Починить автомобиль\n" +
+                $"2. Отказать в обслуживании\n" +
+                $"3. Заказать детали\n");
+            SelectAction();
+            Console.ReadKey(true);
+        }
+
+        private int GetCarPartPrice(CarPart carPart)
+        {
+            int priceMarkup = (int)Math.Round(carPart.Cost * _priceMarkupInPercents / MaxPercent, MidpointRounding.AwayFromZero);
+            return carPart.Cost + priceMarkup;
+        }
+
+        private void SelectAction()
+        {
+            string inputData;
+            bool isCorrectInputData;
+
+            do
+            {
+                isCorrectInputData = true;
+                inputData = Console.ReadLine();
+
+                switch (inputData)
+                {
+                    case "1":
+                        RepairCar();
+                        break;
+                    case "2":
+                        DenyService();
+                        break;
+                    case "3":
+                        OrderParts();
+                        break;
+                    default:
+                        isCorrectInputData = false;
+                        break;
+                }
+            } while (isCorrectInputData == false);
+        }
+
+        private void RepairCar()
+        {
+            int totalPrice = GetTotalPrice();
+            Console.Clear();
+            Console.WriteLine("Выберите деталь со склада:\n");
+            ShowPartsWarehouse();
+            Console.WriteLine();
+            int partsSetIndex = GetPartsSetIndex();
+            Console.Clear();
+
+            if (_partsWarehouse[partsSetIndex].Count == 0)
+            {
+                Console.WriteLine($"У вас закончились детали ({_partsWarehouse[partsSetIndex].Name}).");
+                Console.ReadKey(true);
+                DenyService();
+            }
+            else if (TryReplaceBrokenPart(partsSetIndex))
+            {
+                Console.WriteLine($"Ремонт прошёл успешно.\nВы заработали {totalPrice}.");
+                _money += totalPrice;
+                _brokenCars.Dequeue();
+            }
+            else
+            {
+                Console.WriteLine(
+                    $"Вы заменили не ту деталь.\n" +
+                    $"Вам пришлось выплатить компенсацию в размере {CompensationSum}.\n" +
+                    $"Ваша деталь ({_partsWarehouse[partsSetIndex].Name}) сломалась.");
+                _money -= CompensationSum;
+                _brokenCars.Dequeue();
+            }
+        }
+
+        private void DenyService()
+        {
+            Console.Clear();
+            Console.WriteLine(
+                $"Вы отказали клиенту.\n" +
+                $"Вам пришлось выплатить штраф в размере {DenialServicePenalty}.");
+            _money -= DenialServicePenalty;
+            _brokenCars.Dequeue();
+        }
+
+        private void OrderParts()
+        {
+            Console.Clear();
+            Console.WriteLine("Выберите деталь:\n");
+            ShowPartsWarehouse();
+            Console.WriteLine();
+            int partsSetIndex = GetPartsSetIndex();
+            Console.Clear();
+            int costPerPart = _partsWarehouse[partsSetIndex].CostPerPart;
+            Console.Write($"Цена за штуку: {costPerPart}.\nУкажите количество деталей: ");
+            bool isInteger = int.TryParse(Console.ReadLine(), out int partsCount);
+            Console.Clear();
+
+            if (isInteger && partsCount > 0)
+            {
+                if (TryBuyParts(partsSetIndex, partsCount) == false)
+                    Console.WriteLine("У вас недостаточно денег.");
+            }
+            else
+            {
+                Console.WriteLine("Некорректное количество деталей.");
+            }
+        }
+
+        private int GetTotalPrice()
+        {
+            var brokenPart = CurrentCar.PeekBrokenPart();
+            int brokenPartPrice = GetCarPartPrice(brokenPart);
+            int workPrice = _workPrices[brokenPart.Name];
+            int totalPrice = brokenPartPrice + workPrice;
+            return totalPrice;
+        }
+
+        private void ShowPartsWarehouse()
+        {
+            for (int i = 0; i < _partsWarehouse.Count; i++)
+                Console.WriteLine(
+                    $"{(i + 1):D2}. {_partsWarehouse[i].Name,-15}" +
+                    $"Осталось: {_partsWarehouse[i].Count}");
+        }
+
+        private int GetPartsSetIndex()
+        {
+            string inputData = string.Empty;
+            int partsSetNumber = 0;
+            bool isInteger = false;
+            bool isCorrectPartsSetNumber = false;
+
+            while (isCorrectPartsSetNumber == false)
+            {
+                while (isInteger == false)
+                {
+                    Console.Write("Номер детали: ");
+                    isInteger = int.TryParse(Console.ReadLine(), out partsSetNumber);
+                }
+                if (partsSetNumber > 0 && partsSetNumber <= _partsWarehouse.Count)
+                    isCorrectPartsSetNumber = true;
+                else
+                    isInteger = false;
+            }
+            int partsSetIndex = partsSetNumber - 1;
+            return partsSetIndex;
+        }
+
+        private bool TryReplaceBrokenPart(int partsSetIndex)
+        {
+            var partFromWarehouse = _partsWarehouse[partsSetIndex].GetPart();
+            return CurrentCar.TryReplaceBrokenPart(partFromWarehouse);
+        }
+
+        private bool TryBuyParts(int partsSetIndex, int count)
+        {
+            int totalCost = count * _partsWarehouse[partsSetIndex].CostPerPart;
+
+            if (IsEnoughMoney(totalCost))
+            {
+                _money -= totalCost;
+                var partName = _partsWarehouse[partsSetIndex].Name;
+
+                for (int i = 0; i < count; i++)
+                    _partsWarehouse[partsSetIndex].Add(new CarPart(partName));
+
+                Console.Clear();
+                Console.WriteLine(
+                    $"Вы купили {count} деталей ({partName}).\n" +
+                    $"Сумма покупки: {totalCost}.");
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        private bool IsEnoughMoney(int money)
+        {
+            return _money >= money;
+        }
+    }
+
+    class BrokenCar
+    {
+        private CarPartsSet _carParts;
+
+        public BrokenCar(CarPartsCreator carPartsCreator)
+        {
+            _carParts = carPartsCreator.GetPartsForOneCarWithOneBroken();
+        }
+
+        public CarPart PeekBrokenPart()
+        {
+            return _carParts[GetBrokenPartIndex()];
+        }
+
+        public bool TryReplaceBrokenPart(CarPart newPart)
+        {
+            if (newPart.IsBroken)
+                throw new Exception("Нельзя поставить сломаную деталь.");
+
+            var brokenPart = PeekBrokenPart();
+
+            if (brokenPart.Name == newPart.Name)
+            {
+                _carParts[GetBrokenPartIndex()] = newPart;
+                return true;
+            }
+            else
+                return false;
+        }
+
+        private int GetBrokenPartIndex()
+        {
+            for (int i = 0; i < _carParts.Count; i++)
+                if (_carParts[i].IsBroken)
+                    return i;
+
+            throw new Exception("Нет сломаных деталей.");
+        }
+    }
+
+    class CarPartsCreator
+    {
+        private static Random _random = new Random();
+
+        public CarPartsSet GetSameTypePartsSet(CarPartName name, int count)
+        {
+            var carParts = new List<CarPart>();
+
+            for (int i = 0; i < count; i++)
+                carParts.Add(new CarPart(name));
+
+            return new CarPartsSet(carParts);
+        }
+
+        public CarPartsSet GetPartsForOneCarWithOneBroken()
+        {
+            List<CarPart> carParts = GetPartListForOneCar();
+            int brokenPartIndex = _random.Next(carParts.Count);
+            CarPartName brokenPartName = carParts[brokenPartIndex].Name;
+            carParts[brokenPartIndex] = new CarPart(brokenPartName, isBroken: true);
+            return new CarPartsSet(carParts);
+        }
+
+        private List<CarPart> GetPartListForOneCar()
+        {
+            Array carPartNames = Enum.GetValues(typeof(CarPartName));
+            List<CarPart> carParts = new List<CarPart>();
+
+            for (int i = 0; i < carPartNames.Length; i++)
+            {
+                var carPartName = (CarPartName)carPartNames.GetValue(i);
+                carParts.Add(new CarPart(carPartName));
+            }
+            return carParts;
+        }
+    }
+
+    class CarPartsSet
+    {
+        public readonly CarPartName Name;
+        public readonly int CostPerPart;
+        private List<CarPart> _carPartsSet;
+
+        public CarPartsSet(List<CarPart> carPartsSet)
+        {
+            if (carPartsSet == null)
+                throw new ArgumentNullException();
+
+            if (carPartsSet.Count == 0)
+                throw new ArgumentException("В коллекции должен быть хотя бы один элемент.");
+
+            _carPartsSet = carPartsSet;
+            Name = carPartsSet[0].Name;
+            CostPerPart = carPartsSet[0].Cost;
+        }
+
+        public int Count => _carPartsSet.Count;
+
+        public CarPart this[int i]
+        {
+            get => _carPartsSet[i];
+            set => _carPartsSet[i] = value;
+        }
+
+        public void Add(CarPart carPart)
+        {
+            if (carPart.Name != Name)
+                throw new ArgumentException("Можно добавить деталь только того же типа.");
+
+            _carPartsSet.Add(carPart);
+        }
+
+        public CarPart GetPart()
+        {
+            if (Count == 0)
+                throw new Exception("Детали закончились.");
+
+            CarPart carPart = _carPartsSet[0];
+            _carPartsSet.RemoveAt(0);
+            return carPart;
+        }
+    }
+
+    class CarPart
+    {
+        public readonly CarPartName Name;
+        public readonly int Cost;
+        public readonly bool IsBroken;
+        private const int CostUpperBound = 1000;
+        private const int CostLowerBound = 100;
+        private static Random _random = new Random();
+
+        public CarPart(CarPartName name, bool isBroken = false)
+        {
+            Name = name;
+            Cost = _random.Next(CostLowerBound, CostUpperBound);
+            IsBroken = isBroken;
+        }
+    }
+}
