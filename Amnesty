@@ -1,0 +1,82 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace Lessons
+{
+    class Lessons
+    {
+        public static void Main()
+        {
+            List<Criminal> criminals = GetCriminals(10);
+            Console.WriteLine("Список заключённых до амнистии:\n");
+
+            foreach (var criminal in criminals)
+                criminal.ShowInfo();
+
+            criminals = criminals.Where(c => c.Crime != "Антиправительственное").ToList();
+            Console.WriteLine("Список заключённых после амнистии:\n");
+
+            foreach (var criminal in criminals)
+                criminal.ShowInfo();
+
+            Console.ReadKey(true);
+        }
+
+        private static List<Criminal> GetCriminals(int count)
+        {
+            var criminalCreator = new RandomCriminalCreator();
+            var criminals = new List<Criminal>();
+
+            for (int i = 0; i < count; i++)
+                criminals.Add(new Criminal(criminalCreator));
+
+            return criminals;
+        }
+    }
+
+    class Criminal
+    {
+        public Criminal(RandomCriminalCreator criminalCreator)
+        {
+            Name = criminalCreator.Name;
+            Crime = criminalCreator.Crime;
+        }
+
+        public string Name { get; private set; }
+        public string Crime { get; private set; }
+
+        public void ShowInfo()
+        {
+            Console.WriteLine(
+                $"Имя преступника: {Name}\n" +
+                $"Преступление: {Crime}\n");
+        }
+    }
+
+    class RandomCriminalCreator
+    {
+        private static Random _random = new Random();
+        private string[] _names =
+        {
+            "Боб",
+            "Марк",
+            "Майкл",
+            "Джордж",
+            "Кевин",
+            "Дэнис",
+            "Анджела",
+            "Маргарет",
+        };
+        private string[] _crimes =
+        {
+            "Антиправительственное",
+            "Насильственное",
+            "Материальное",
+            "Другое",
+        };
+
+        public string Name => _names[_random.Next(_names.Length)];
+        public string Crime => _crimes[_random.Next(_crimes.Length)];
+    }
+}
