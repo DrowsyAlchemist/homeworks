@@ -74,12 +74,12 @@ namespace Lessons
 
         public void SortPatientsByName()
         {
-            _patients = _patients.OrderBy(p => p.Name).ToList();
+            _patients = _patients.OrderBy(patient => patient.Name).ToList();
         }
 
         public void SortPatientsByAge()
         {
-            _patients = _patients.OrderBy(p => p.Age).ToList();
+            _patients = _patients.OrderBy(patient => patient.Age).ToList();
         }
 
         public void FindPatientsByDisease()
@@ -88,7 +88,7 @@ namespace Lessons
             Console.Write("Заболевание: ");
             string disease = Console.ReadLine();
             Console.WriteLine();
-            var result = _patients.Where(p => p.Disease.ToLower() == disease.ToLower()).ToList();
+            var result = _patients.Where(patient => patient.Disease.ToLower() == disease.ToLower()).ToList();
 
             if (result.Any())
             {
