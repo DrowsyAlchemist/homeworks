@@ -1,0 +1,156 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace Lessons
+{
+    class Lessons
+    {
+        public static void Main()
+        {
+            List<Patient> patients = GetPatients(20);
+            Hospital hospital = new Hospital(patients);
+            string inputDate = string.Empty;
+
+            while (inputDate != "5")
+            {
+                Console.Clear();
+                Console.WriteLine(
+                    "1. Список всех пациентов\n" +
+                    "2. Отсортировать всех больных по фио\n" +
+                    "3. Отсортировать всех больных по возрасту\n" +
+                    "4. Вывести больных с определенным заболеванием\n" +
+                    "5. Выйти\n");
+                inputDate = Console.ReadLine();
+
+                switch (inputDate)
+                {
+                    case "1":
+                        hospital.PrintPatients();
+                        break;
+                    case "2":
+                        hospital.SortPatientsByName();
+                        break;
+                    case "3":
+                        hospital.SortPatientsByAge();
+                        break;
+                    case "4":
+                        hospital.FindPatientsByDisease();
+                        break;
+                }
+            }
+        }
+
+        private static List<Patient> GetPatients(int count)
+        {
+            var patientCreator = new RandomPatientCreator();
+            var patients = new List<Patient>();
+
+            for (int i = 0; i < count; i++)
+                patients.Add(new Patient(patientCreator));
+
+            return patients;
+        }
+    }
+
+    class Hospital
+    {
+        private List<Patient> _patients;
+
+        public Hospital(List<Patient> patients)
+        {
+            _patients = patients;
+        }
+
+        public void PrintPatients()
+        {
+            Console.Clear();
+
+            foreach (var patient in _patients)
+                patient.ShowInfo();
+
+            Console.ReadKey(true);
+        }
+
+        public void SortPatientsByName()
+        {
+            _patients = _patients.OrderBy(p => p.Name).ToList();
+        }
+
+        public void SortPatientsByAge()
+        {
+            _patients = _patients.OrderBy(p => p.Age).ToList();
+        }
+
+        public void FindPatientsByDisease()
+        {
+            Console.Clear();
+            Console.Write("Заболевание: ");
+            string disease = Console.ReadLine();
+            Console.WriteLine();
+            var result = _patients.Where(p => p.Disease.ToLower() == disease.ToLower()).ToList();
+
+            if (result.Any())
+            {
+                foreach (var patient in result)
+                    patient.ShowInfo();
+            }
+            else
+            {
+                Console.WriteLine("Пациенты с таким заболеванием не найдены.");
+            }
+            Console.ReadKey(true);
+        }
+    }
+
+    class Patient
+    {
+        public Patient(RandomPatientCreator patientCreator)
+        {
+            Name = patientCreator.Name;
+            Age = patientCreator.Age;
+            Disease = patientCreator.Disease;
+        }
+
+        public string Name { get; private set; }
+        public int Age { get; private set; }
+        public string Disease { get; private set; }
+
+        public void ShowInfo()
+        {
+            Console.WriteLine(
+                $"Имя пациента: {Name}\n" +
+                $"Возраст: {Age}\n" +
+                $"Болезнь: {Disease}\n");
+        }
+    }
+
+    class RandomPatientCreator
+    {
+        private const int MaxAge = 100;
+        private static Random _random = new Random();
+        private string[] _names =
+        {
+            "Боб",
+            "Марк",
+            "Майкл",
+            "Джордж",
+            "Кевин",
+            "Дэнис",
+            "Анджела",
+            "Маргарет",
+        };
+        private string[] _diseases =
+        {
+            "Вирусное",
+            "Бактериальное",
+            "Аутоиммунное",
+            "Опухоль",
+            "Другое"
+        };
+
+        public string Name => _names[_random.Next(_names.Length)];
+        public string Disease => _diseases[_random.Next(_diseases.Length)];
+        public int Age => _random.Next(MaxAge);
+    }
+}
