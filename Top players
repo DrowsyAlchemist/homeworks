@@ -14,25 +14,26 @@ namespace Lessons
 
             while (inputDate != "4")
             {
+                int topCount = 3;
                 Console.Clear();
                 Console.WriteLine(
-                    "1. Список всех игроков сервера\n" +
-                    "2. Топ 3 игрока по уровню\n" +
-                    "3. Топ 3 игрока по силе\n" +
-                    "4. Выйти\n");
+                    $"1. Список всех игроков сервера\n" +
+                    $"2. Топ {topCount} игрока по уровню\n" +
+                    $"3. Топ {topCount} игрока по силе\n" +
+                    $"4. Выйти\n");
                 inputDate = Console.ReadLine();
                 Console.Clear();
 
                 switch (inputDate)
                 {
                     case "1":
-                        server.PrintPlayers();
+                        server.PrintAllPlayers();
                         break;
                     case "2":
-                        server.PrintTop3ByLevel();
+                        server.PrintTopPlayersByLevel(topCount);
                         break;
                     case "3":
-                        server.PrintTop3ByStrength();
+                        server.PrintTopPlayersByStrength(topCount);
                         break;
                 }
                 Console.ReadKey(true);
@@ -60,25 +61,26 @@ namespace Lessons
             _players = players;
         }
 
-        public void PrintPlayers()
+        public void PrintAllPlayers()
         {
-            foreach (Player player in _players)
-                player.ShowInfo();
+            PrintPlayers(_players);
         }
 
-        public void PrintTop3ByLevel()
+        public void PrintTopPlayersByLevel(int topCount)
         {
-            var result = _players.OrderByDescending(p => p.Level).Take(3);
-
-            foreach (Player player in result)
-                player.ShowInfo();
+            var result = _players.OrderByDescending(player => player.Level).Take(topCount);
+            PrintPlayers(result);
         }
 
-        public void PrintTop3ByStrength()
+        public void PrintTopPlayersByStrength(int topCount)
         {
-            var result = _players.OrderByDescending(p => p.Stength).Take(3);
+            var result = _players.OrderByDescending(player => player.Stength).Take(topCount);
+            PrintPlayers(result);
+        }
 
-            foreach (Player player in result)
+        private void PrintPlayers(IEnumerable<Player> players)
+        {
+            foreach (Player player in players)
                 player.ShowInfo();
         }
     }
