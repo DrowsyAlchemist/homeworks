@@ -1,0 +1,77 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace Lessons
+{
+    class Lessons
+    {
+        public static void Main()
+        {
+            List<Stew> stewSet = GetStewSet(10);
+            Console.WriteLine("Вся тушёнка:\n");
+            PrintStewSet(stewSet);
+            var expiredStew = stewSet.Where(stew => stew.ExpirationDate < DateTime.Now.Year);
+
+            if (expiredStew.Any())
+            {
+                Console.WriteLine("Вся просроченная :\n");
+                PrintStewSet(expiredStew);
+            }
+            else
+            {
+                Console.WriteLine("В наборе нет просроченной тушёнки.");
+            }
+            Console.ReadKey(true);
+        }
+
+        private static List<Stew> GetStewSet(int count)
+        {
+            var stewSet = new List<Stew>();
+
+            for (int i = 0; i < count; i++)
+                stewSet.Add(new Stew());
+
+            return stewSet;
+        }
+
+        private static void PrintStewSet(IEnumerable<Stew> stewSet)
+        {
+            foreach (var stew in stewSet)
+                stew.ShowInfo();
+        }
+    }
+
+    class Stew
+    {
+        private const int MaxProductionYear = 2022;
+        private const int MinProductionYear = 2010;
+        private const int ShelfLifeInYears = 5;
+        private static Random _random = new Random();
+        private string[] _names =
+        {
+            "Мясо",
+            "Рыба",
+            "Овощи",
+        };
+
+        public Stew()
+        {
+            Name = _names[_random.Next(_names.Length)];
+            ProductionYear = _random.Next(MinProductionYear, MaxProductionYear);
+            ExpirationDate = ProductionYear + ShelfLifeInYears;
+        }
+
+        public string Name { get; private set; }
+        public int ProductionYear { get; private set; }
+        public int ExpirationDate { get; private set; }
+
+        public void ShowInfo()
+        {
+            Console.WriteLine(
+                $"Название: {Name}\n" +
+                $"Год производства: {ProductionYear}\n" +
+                $"Годен до: {ExpirationDate}\n");
+        }
+    }
+}
