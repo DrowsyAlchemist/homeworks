@@ -1,0 +1,129 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace Lessons
+{
+    class Lessons
+    {
+        public static void Main()
+        {
+            List<Player> players = GetPlayers(20);
+            Server server = new Server(players);
+            string inputDate = string.Empty;
+
+            while (inputDate != "4")
+            {
+                Console.Clear();
+                Console.WriteLine(
+                    "1. Список всех игроков сервера\n" +
+                    "2. Топ 3 игрока по уровню\n" +
+                    "3. Топ 3 игрока по силе\n" +
+                    "4. Выйти\n");
+                inputDate = Console.ReadLine();
+                Console.Clear();
+
+                switch (inputDate)
+                {
+                    case "1":
+                        server.PrintPlayers();
+                        break;
+                    case "2":
+                        server.PrintTop3ByLevel();
+                        break;
+                    case "3":
+                        server.PrintTop3ByStrength();
+                        break;
+                }
+                Console.ReadKey(true);
+            }
+        }
+
+        private static List<Player> GetPlayers(int count)
+        {
+            var playerCreator = new RandomPlayerCreator();
+            var players = new List<Player>();
+
+            for (int i = 0; i < count; i++)
+                players.Add(new Player(playerCreator));
+
+            return players;
+        }
+    }
+
+    class Server
+    {
+        private List<Player> _players;
+
+        public Server(List<Player> players)
+        {
+            _players = players;
+        }
+
+        public void PrintPlayers()
+        {
+            foreach (Player player in _players)
+                player.ShowInfo();
+        }
+
+        public void PrintTop3ByLevel()
+        {
+            var result = _players.OrderByDescending(p => p.Level).Take(3);
+
+            foreach (Player player in result)
+                player.ShowInfo();
+        }
+
+        public void PrintTop3ByStrength()
+        {
+            var result = _players.OrderByDescending(p => p.Stength).Take(3);
+
+            foreach (Player player in result)
+                player.ShowInfo();
+        }
+    }
+
+    class Player
+    {
+        public Player(RandomPlayerCreator playerCreator)
+        {
+            Name = playerCreator.Name;
+            Level = playerCreator.Level;
+            Stength = playerCreator.Strength;
+        }
+
+        public string Name { get; private set; }
+        public int Level { get; private set; }
+        public int Stength { get; private set; }
+
+        public void ShowInfo()
+        {
+            Console.WriteLine(
+                $"Имя игрока: {Name}\n" +
+                $"Уровень: {Level}\n" +
+                $"Сила: {Stength}\n");
+        }
+    }
+
+    class RandomPlayerCreator
+    {
+        private const int MaxLevel = 100;
+        private const int MaxStrength = 50;
+        private static Random _random = new Random();
+        private string[] _names =
+        {
+            "Боб",
+            "Марк",
+            "Майкл",
+            "Джордж",
+            "Кевин",
+            "Дэнис",
+            "Анджела",
+            "Маргарет",
+        };
+
+        public string Name => _names[_random.Next(_names.Length)];
+        public int Level => _random.Next(MaxLevel);
+        public int Strength => _random.Next(MaxStrength);
+    }
+}
