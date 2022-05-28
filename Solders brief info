@@ -1,0 +1,111 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace Lessons
+{
+    class Lessons
+    {
+        public static void Main()
+        {
+            List<Soldier> soldiers = GetSoldiers(10);
+            ShowSoldersBriefInfo(soldiers);
+            Console.ReadKey(true);
+        }
+
+        private static List<Soldier> GetSoldiers(int count)
+        {
+            var soldiers = new List<Soldier>();
+
+            for (int i = 0; i < count; i++)
+                soldiers.Add(new Soldier());
+
+            return soldiers;
+        }
+
+        private static void ShowSoldersBriefInfo(List<Soldier> soldiers)
+        {
+            var result = soldiers.Select(solder => new
+            {
+                solder.Name,
+                solder.Rank,
+            });
+            foreach (var soldier in result)
+                Console.WriteLine(
+                    $"Имя солдата: {soldier.Name}\n" +
+                    $"Звание: {soldier.Rank}\n");
+        }
+    }
+
+    enum SoldierWeapon
+    {
+        Пистолет,
+        Автомат,
+        Винтовка,
+        Пулемёт,
+        Гранатомёт
+    }
+
+    enum SoldierRank
+    {
+        Рядовой,
+        Сержант,
+        Прапорщк,
+        Лейтенант,
+        Капитан,
+        Майор,
+        Полковник
+    }
+
+    class Soldier
+    {
+        private const int MaxServiceLife = 60;
+        private const int MinServiceLife = 12;
+        private static Random _random = new Random();
+        private string[] _names =
+{
+            "Боб",
+            "Марк",
+            "Майкл",
+            "Джордж",
+            "Кевин",
+            "Дэнис",
+            "Анджела",
+            "Маргарет",
+        };
+
+        public Soldier()
+        {
+            Name = _names[_random.Next(_names.Length)];
+            Weapon = GetWeapon();
+            Rank = GetRank();
+            ServiceLifeInMonths = _random.Next(MinServiceLife, MaxServiceLife + 1);
+        }
+
+        public string Name { get; private set; }
+        public SoldierWeapon Weapon { get; private set; }
+        public SoldierRank Rank { get; private set; }
+        public int ServiceLifeInMonths { get; private set; }
+
+        public void ShowInfo()
+        {
+            Console.WriteLine(
+                $"Имя солдата: {Name}\n" +
+                $"Оружие: {Weapon}\n" +
+                $"Звание: {Rank}\n" +
+                $"Срок службы в месяцах: {ServiceLifeInMonths}\n");
+        }
+
+        private SoldierWeapon GetWeapon()
+        {
+            Array weapons = typeof(SoldierWeapon).GetEnumValues();
+            return (SoldierWeapon)_random.Next(weapons.Length);
+        }
+
+        private SoldierRank GetRank()
+        {
+            Array ranks = typeof(SoldierRank).GetEnumValues();
+            return (SoldierRank)_random.Next(ranks.Length);
+        }
+    }
+}
